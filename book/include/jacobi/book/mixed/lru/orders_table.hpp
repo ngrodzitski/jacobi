@@ -457,6 +457,8 @@ private:
 
             for( details::lru_kick_list_t::index_type_t i = 0; i < size; ++i )
             {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wbitwise-instead-of-logical"
                 if( ( prices[ i ] == p ) & ( nullptr != levels[ i ] ) )
                 {
                     lvl   = levels[ i ];
@@ -464,6 +466,7 @@ private:
                     index = i;
                 }
             }
+#pragma clang diagnostic pop
 
             return std::make_tuple( lvl, it, index );
         }

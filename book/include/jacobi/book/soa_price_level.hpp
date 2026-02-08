@@ -88,14 +88,12 @@ struct soa_price_level_order_node_pos_t
                                    Integer >;
     using base_t::base_t;
 
-    inline static constexpr soa_price_level_order_node_pos_t usable_nodes_offset{
-        2
-    };
+    inline static constexpr Integer usable_nodes_offset{ 2 };
 
     [[nodiscard]] constexpr std::size_t data_index() const noexcept
     {
-        assert( *this >= usable_nodes_offset );
-        return type_safe::get( *this ) - type_safe::get( usable_nodes_offset );
+        assert( type_safe::get( *this ) >= usable_nodes_offset );
+        return type_safe::get( *this ) - usable_nodes_offset;
     }
 
     [[nodiscard]] constexpr std::size_t node_link_index() const noexcept
@@ -324,7 +322,7 @@ public:
         const auto head =
             m_links_storage[ nodes_anchor_pos.node_link_index() ].next;
 
-        return ranges::view::generate(
+        return ranges::views::generate(
                    [ i = head, this ]() mutable
                    {
                        const auto current = i;
@@ -350,7 +348,7 @@ public:
         const auto head =
             m_links_storage[ nodes_anchor_pos.node_link_index() ].prev;
 
-        return ranges::view::generate(
+        return ranges::views::generate(
                    [ i = head, this ]() mutable
                    {
                        const auto current = i;

@@ -161,8 +161,13 @@ private:
     [[nodiscard]] std::pair< price_level_t *, typename levels_table_t::iterator >
     level_at( order_price_t price )
     {
-        if( price_ops_t{}.lt( m_price0, price ) | m_price_levels.empty() )
-            [[unlikely]]
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wbitwise-instead-of-logical"
+        const bool is_new_base_price =
+            price_ops_t{}.lt( m_price0, price ) | m_price_levels.empty();
+#pragma clang diagnostic pop
+
+        if( is_new_base_price ) [[unlikely]]
         {
             // Here: we must handle new base price.
             if( m_price_levels.empty() ) [[unlikely]]
@@ -451,8 +456,12 @@ private:
     [[nodiscard]] std::pair< price_level_t *, typename levels_table_t::iterator >
     level_at( order_price_t price )
     {
-        if( price_ops_t{}.lt( m_price0, price ) | m_price_levels.empty() )
-            [[unlikely]]
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wbitwise-instead-of-logical"
+        const bool is_new_base_price =
+            price_ops_t{}.lt( m_price0, price ) | m_price_levels.empty();
+#pragma clang diagnostic pop
+        if( is_new_base_price ) [[unlikely]]
         {
             // Here: we must handle new base price.
             if( m_price_levels.empty() ) [[unlikely]]

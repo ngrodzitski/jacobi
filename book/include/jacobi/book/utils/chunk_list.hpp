@@ -215,7 +215,7 @@ public:
     /**
      * @brief The type that eventually stores all the orders on this level.
      */
-    using list_impl_t      = typename List_Traits::list_t< chunk_t >;
+    using list_impl_t      = typename List_Traits::template list_t< chunk_t >;
     using chunk_iterator_t = list_impl_t::iterator;
 
     chunk_list_t() = default;

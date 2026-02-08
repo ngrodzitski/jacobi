@@ -60,7 +60,7 @@ public:
     /**
      * @brief A storage type for the sequence of orders within a level.
      */
-    using orders_container_t = typename List_Traits::list_t< order_t >;
+    using orders_container_t = typename List_Traits::template list_t< order_t >;
 
     explicit chunked_price_level_t() = default;
 

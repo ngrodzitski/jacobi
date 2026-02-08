@@ -23,7 +23,7 @@ namespace jacobi::book
  */
 template < typename List_Traits >
 concept List_Traits_Concept =
-    requires { typename List_Traits::list_t< order_t >; };
+    requires { typename List_Traits::template list_t< order_t >; };
 
 //
 // std_list_traits_t

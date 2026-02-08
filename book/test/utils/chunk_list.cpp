@@ -1,5 +1,6 @@
 #include <jacobi/book/utils/chunk_list.hpp>
 
+#include <algorithm>
 #include <random>
 
 #include <range/v3/view/subrange.hpp>

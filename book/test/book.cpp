@@ -1,6 +1,8 @@
 #include <jacobi/book/book.hpp>
 
+#include <algorithm>
 #include <cstdlib>
+#include <random>
 
 #include <range/v3/view/zip.hpp>
 #include <range/v3/view/iota.hpp>
@@ -382,9 +384,9 @@ protected:
             }
         }
 
-        std::random_shuffle( begin( order_refs ),
-                             end( order_refs ),
-                             []( auto r ) { return std::rand() % r; } );
+        std::random_device rd;
+        std::mt19937 g( rd() );
+        std::shuffle( begin( order_refs ), end( order_refs ), g );
 
         // Reassign ids so that they match with how the order would be added.
         order_id_t id_counter{ 1 };

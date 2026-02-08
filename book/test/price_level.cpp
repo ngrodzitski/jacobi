@@ -3,6 +3,7 @@
 #include <jacobi/book/chunked_price_level.hpp>
 #include <jacobi/book/chunked_soa_price_level.hpp>
 
+#include <algorithm>
 #include <array>
 #include <random>
 

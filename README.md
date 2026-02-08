@@ -73,6 +73,14 @@ cmake --build _build_release -j 6
 conan install -pr:a ./conan_profiles/ubu-gcc-11-ubasan --build missing -of _build_ubasan .
 ( source ./_build_ubasan/conanbuild.sh && cmake -B_build_ubasan . -DCMAKE_TOOLCHAIN_FILE=_build_ubasan/conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Debug -DJACOBI_BUILD_BENCHMARKS=OFF)
 cmake --build _build_ubasan -j 6
+
+
+# Clang:
+conan install . -pr:a ubu-clang-18 -s:a build_type=Debug --build missing -of _build_clang
+( source ./_build_clang/conanbuild.sh && cmake -B_build_clang . -DCMAKE_TOOLCHAIN_FILE=_build_clang/conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Debug)
+cmake --build _build_clang -j 6
+
+
 ```
 
 Running tests:

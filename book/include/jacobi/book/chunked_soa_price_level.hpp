@@ -190,7 +190,7 @@ struct soa_chunk_node_t
     {
         const auto start_pos = links[ head_pos ].next;
 
-        return ranges::view::generate(
+        return ranges::views::generate(
                    [ this, i = start_pos ]() mutable
                    {
                        const auto pos = i;
@@ -211,7 +211,7 @@ struct soa_chunk_node_t
     {
         const auto start_pos = links[ head_pos ].prev;
 
-        return ranges::view::generate(
+        return ranges::views::generate(
                    [ this, i = start_pos ]() mutable
                    {
                        const auto pos = i;
@@ -242,7 +242,7 @@ class chunked_soa_price_level_t
 {
 public:
     using soa_chunks_container_t =
-        typename List_Traits::list_t< details::soa_chunk_node_t >;
+        typename List_Traits::template list_t< details::soa_chunk_node_t >;
 
     explicit chunked_soa_price_level_t() = default;
 
@@ -392,7 +392,7 @@ public:
         return m_soa_chunks
                | ranges::views::transform( []( const auto & chunk )
                                            { return chunk.orders_range(); } )
-               | ranges::view::join
+               | ranges::views::join
                | ranges::views::transform(
                    [ p = m_price ]( std::pair< order_id_t, order_qty_t > id_qty )
                    { return order_t{ id_qty.first, id_qty.second, p }; } );
@@ -407,7 +407,7 @@ public:
                | ranges::views::transform(
                    []( const auto & chunk )
                    { return chunk.orders_range_reverse(); } )
-               | ranges::view::join
+               | ranges::views::join
                | ranges::views::transform(
                    [ p = m_price ]( std::pair< order_id_t, order_qty_t > id_qty )
                    { return order_t{ id_qty.first, id_qty.second, p }; } );
