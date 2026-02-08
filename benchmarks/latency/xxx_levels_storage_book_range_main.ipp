@@ -74,7 +74,15 @@ void run_benchmarks( const config_t & cfg )
                                   + cfg.events_file_path };
     }
 
-    const auto r = std::make_pair( cfg.range.at( 0 ), cfg.range.at( 1 ) );
+    const auto r = [ & ]
+    {
+        if( !cfg.range.empty() )
+        {
+            return std::make_pair( cfg.range.at( 0 ), cfg.range.at( 1 ) );
+        }
+
+        return std::make_pair( std::size_t{}, events.size() );
+    }();
 
     const std::regex filter( cfg.filter_regex );
 

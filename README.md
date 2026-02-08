@@ -50,7 +50,7 @@ TODO-instructions and TODO-experiment-example.
 Prerequisites:
   * C++20 compiler (the oldest version tested is g++-11).
   * CMake.
-  * [Conan package manager](https://conan.io/) or alternatevely you
+  * [Conan package manager](https://conan.io/) or alternatively you
     provide an environment that will make all CMake `find(XXX)`
     in the root cmake-file work.
 
@@ -92,7 +92,7 @@ ctest -T test --test-dir _build
 
 
 **JACOBI** is a header-only library that uses
-template metaprogramming to compose the order book at compile-time.
+template meta-programming to compose the order book at compile-time.
 The main reason is performance. Because having required customization points
 as template parameters the compiler generates a monolithic class with
 zero virtual functions overhead and does better with inlining stuff.
@@ -200,7 +200,7 @@ implementing a book:
   The routine responsible for managing the queue of orders at a specific price point.
 
 
-Additionaly here are some no so important components:
+Additionally here are some not so important components:
 
   * Book Sequence Number (BSN):
     The book can track the sequence number of events (updates/operations).
@@ -219,7 +219,7 @@ Vocabulary types are defined in [vocabulary_types.hpp](book/include/jacobi/book/
 
 **JACOBI** leverages the [foonathan/type_safe](https://github.com/foonathan/type_safe)
 library to enforce strong typing on primitives.
-This prevents "stringly typed" errors and ensures you don't
+This prevents "strongly typed" errors and ensures you don't
 accidentally assign  a price to a quantity.
 
 Key types include:
@@ -419,7 +419,7 @@ It is initialized with a shared context (`Book_Impl_Data`) that provides:
      to handle the lifecycle (creation/retirement) of level objects.
 
 The above is passed to Orders Table implementation in constructor
-in a form of shared context refered in the implementation as
+in a form of shared context referred in the implementation as
 `Book_Impl_Data` (see also `Book_Impl_Data_Concept`).
 
 ### Implementation: CRTP
@@ -490,8 +490,8 @@ This approach uses contiguous memory (`std::vector<PLVL>`).
     - Cons: if a new order comes in with a price strictly "worse"
       than the current base, we must insert at the front.
       This forces a shift of all elements (`O(N)`).
-      valnurable to some  book profiles that have orders
-      at extreme prices which streches the storage.
+      vulnerable to some  book profiles that have orders
+      at extreme prices which stretches the storage.
 
 **Offset Mapping + Append-Only Top** (linear_v2)
 
@@ -509,8 +509,8 @@ This approach uses contiguous memory (`std::vector<PLVL>`).
     - Cons: memory usage is strictly monotonic.
       If the market moves significantly, this vector will consume vast
       amounts of RAM for empty price levels.
-      As llinear_v1 it is valnurable to some  book profiles that have orders
-      at extreme prices which streches the storage.
+      As linear_v1 it is vulnerable to some  book profiles that have orders
+      at extreme prices which stretches the storage.
 
 **Sorted Vector** (linear_v3)
 
@@ -723,7 +723,7 @@ own set of parameters and provides a custom output: distribution and Pxx values.
 
 To control which files to use for load and also what are some other parameters
 throughput benchmarks consider the following environment variables
-(note: it's not feasable to pass a custom filename and other params to a benchmark
+(note: it's not feasible to pass a custom filename and other params to a benchmark
 implemented with googlebenchmark):
 
 **Data input**
@@ -732,7 +732,7 @@ implemented with googlebenchmark):
 
 **Runtime Tuning**
 
-  * `JACOBI_BENCHMARK_EVENTS_RANGE=<Start>,<End>`: specefy a specific range of events.
+  * `JACOBI_BENCHMARK_EVENTS_RANGE=<Start>,<End>`: specify a specific range of events.
     If exists benchmark would do measurements only for events in a range: `[Start, End)`.
     Note: the range should be valid (`Start<End`) and be within the events data file.
 
@@ -938,9 +938,68 @@ Delete order record:
 See format details in
 [snapshots/events_snapshots.hpp](./snapshots/include/jacobi/snapshots/events_snapshots.hpp);
 
+A few events data files can be found in `benchmarks_data` directory:
+
+  * [Single book data](./benchmarks_data/single)
+  * [Multi book data](./benchmarks_data/multi)
+
+Here are few command line examples to run benchmarks:
+
+```bash
+
+# ==============================================================================
+# THROUGHPUT SINGLE
+
+# Price level storage: linear_v2;
+# Filter only refIX3 (boost flat map) orders reference index variant;
+# Measure only events in range: [10'000, 200'000).
+JACOBI_BENCHMARK_EVENTS_FILE=benchmarks_data/single/single238k.jacobi_data JACOBI_BENCHMARK_EVENTS_RANGE=10000,200000 taskset -c 3 ./_build_release/bin/_bench.throughput.linear_v2_levels_storage.single_book --benchmark_filter=refIX3
+
+# Price level storage: std::map;
+# Filter only bsn1 (real BSN counter) benchmarks;
+JACOBI_BENCHMARK_EVENTS_FILE=benchmarks_data/single/single238k.jacobi_data taskset -c 3 ./_build_release/bin/_bench.throughput.map_levels_storage.single_book --benchmark_filter=bsn1
+
+# Price level storage: mixed_hot_cold (with hot storage size 1024);
+# Filter only bsn1 (real BSN counter) benchmarks;
+# Filter only plvl3 (SOA based price level);
+# Measure only events in range: [10'000, 999'000).
+JACOBI_BENCHMARK_EVENTS_FILE=benchmarks_data/single/single1066k.jacobi_data JACOBI_BENCHMARK_EVENTS_RANGE=10000,999000 JACOBI_BENCHMARK_HOT_STORAGE_SIZE=1024  taskset -c 3 ./_build_release/bin/_bench.throughput.mixed_hot_cold_levels_storage.single_book --benchmark_filter=plvl3
+
+# ==============================================================================
+# THROUGHPUT MULTI
+
+# Price level storage: linear_v2;
+# filter only bsn1 (real BSN counter) benchmarks;
+JACOBI_BENCHMARK_EVENTS_FILE=benchmarks_data/multi/multi654k_b13.jacobi_data taskset -c 3 ./_build_release/bin/_bench.throughput.linear_v2_levels_storage.multi_book --benchmark_filter=bsn1
+
+# Price level storage: linear_v1;
+# Filter only bsn1 (real BSN counter) benchmarks;
+# Filter only refIX3 (boost flat map) or refIX4 (abseil flat map) orders reference index variants;
+# Measure only events in range: [10'000, 640'000).
+JACOBI_BENCHMARK_EVENTS_FILE=benchmarks_data/multi/multi654k_b13.jacobi_data JACOBI_BENCHMARK_EVENTS_RANGE=10000,640000 taskset -c 3 ./_build_release/bin/_bench.throughput.linear_v1_levels_storage.multi_book --benchmark_filter=bsn1.*X[34]
+
+# Price level storage: mixed_hot_cold (with hot storage size 128);
+# Filter only bsn1 (real BSN counter) benchmarks;
+# Filter only refIX3 (boost flat map) or refIX4 (abseil flat map) orders reference index variants;
+JACOBI_BENCHMARK_EVENTS_FILE=benchmarks_data/multi/multi654k_b13.jacobi_data JACOBI_BENCHMARK_HOT_STORAGE_SIZE=128  taskset -c 3 ./_build_release/bin/_bench.throughput.mixed_hot_cold_levels_storage.multi_book --benchmark_filter=bsn1
+
+# ==============================================================================
+# LATENCY
+
+# Price level storage: linear_v1;
+# Do 1000000 (1M) measurements.
+taskset -c 3 ./_build_release/bin/_bench.latency.linear_v1_levels_storage -f benchmarks_data/single/single1066k.jacobi_data -n 1000000
+
+# Price level storage: mixed_hot_cold (with hot storage size 256);
+# Filter only bsn1 (real BSN counter) benchmarks;
+# Measure only events in range: [10'000, 200'000);
+# Do 5000000 (5M) measurements.
+JACOBI_BENCHMARK_HOT_STORAGE_SIZE=256  taskset -c 3 ./_build_release/bin/_bench.latency.mixed_hot_cold_levels_storage -r 10000 200000  -f benchmarks_data/single/single238k.jacobi_data -n 5000000 --benchmark_filter=bsn1
+```
+
 ## Common settings
 
-When running benchmarks consider the following fine tunning:
+When running benchmarks consider the following fine tuning:
 
 ```bash
 
