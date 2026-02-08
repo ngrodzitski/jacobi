@@ -1,0 +1,21 @@
+[settings]
+arch=x86_64
+build_type=Release
+compiler=gcc
+compiler.cppstd=20
+compiler.libcxx=libstdc++11
+compiler.version=11
+os=Linux
+
+[buildenv]
+CC=gcc-11
+CXX=g++-11
+
+[conf]
+tools.build:compiler_executables={'c': 'gcc-11', 'cpp': 'g++-11'}
+
+# AVX, AVX2, FMA, BMI1, BMI2
+tools.build:cxxflags=["-march=x86-64-v3"]
+tools.build:cflags=["-march=x86-64-v3"]
+
+tools.info.package_id:confs=["tools.build:cxxflags", "tools.build:cflags"]

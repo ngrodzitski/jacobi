@@ -1,0 +1,11 @@
+include(ubu-gcc-11)
+[settings]
+build_type=Debug
+
+[conf]
+tools.build:cxxflags=["-fsanitize=address,undefined", "-fsanitize-address-use-after-scope", "-fno-omit-frame-pointer"]
+tools.build:cflags=["-fsanitize=address,undefined", "-fsanitize-address-use-after-scope", "-fno-omit-frame-pointer"]
+tools.build:exelinkflags=["-fsanitize=address,undefined"]
+tools.build:sharedlinkflags=["-fsanitize=address,undefined"]
+tools.info.package_id:confs=["tools.build:cxxflags", "tools.build:cflags", "tools.build:exelinkflags", "tools.build:sharedlinkflags"]
+

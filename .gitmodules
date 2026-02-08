@@ -1,0 +1,6 @@
+[submodule "cmake-scripts"]
+	path = cmake-scripts
+	url = git@github.com:ngrodzitski/cmake-scripts.git
+[submodule "custom_deps/plf_list/plf_list"]
+	path = custom_deps/plf_list/plf_list
+	url = https://github.com/ngrodzitski/plf_list.git
