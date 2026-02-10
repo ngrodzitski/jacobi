@@ -21,8 +21,11 @@ jobs:
         build_type:
           - Release
           - Debug
+    env:
+      BUILD_DIR: _build_${{ matrix.conan_profile }}_${{ matrix.build_type }}
+      CONAN_HOME: ${{ github.workspace }}/.conan2
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: 'true'
 
@@ -42,37 +45,62 @@ jobs:
           sudo apt-get -qy install \
             libc++-18-dev libc++abi-18-dev llvm-18
 
-      - name: Prepare env
-        shell: bash
-        run: |
-          pip install --user conan==2.* "protobuf>=6,<7"
-          conan profile detect
-          conan config install . -sf conan_profiles -tf profiles
+      - name: Install Conan (with package cache)
+        uses: conan-io/setup-conan@v1
+        with:
+          version: 2.25.2
+          home: ${{ env.CONAN_HOME }}
+          cache_packages: false
+          profile_detect: false
 
-      - name: Run conan install
+      - name: Cache Conan packages
+        uses: actions/cache@v4.2.3
+        id: cache-conan-packages
+        with:
+          path: ${{ env.CONAN_HOME }}/p
+          key: conan-${{ matrix.conan_profile }}-${{ matrix.build_type }}-${{ runner.os }}
+          restore-keys: |
+            conan-${{ matrix.conan_profile }}-${{ matrix.build_type }}-${{ runner.os }}-
+
+      - name: Conan install
         shell: bash
         run: |
+          conan profile detect --force
+          conan config install . -sf conan_profiles -tf profiles
           conan install . \
-             -pr:a $JACOBI_CONAN_PROFILE \
+             -pr:a ${{ env.JACOBI_CONAN_PROFILE }} \
              -s:a build_type=${{ matrix.build_type }} \
              --build missing \
-             -of _build
+             -of ${{ env.BUILD_DIR }}
+          conan cache clean "*" --build --temp
 
       - name: CMake configure
         shell: bash
         run: |
-          source ./_build/conanbuild.sh
-          cmake -B_build . \
-            -DCMAKE_TOOLCHAIN_FILE=_build/conan_toolchain.cmake \
+          source ./${{ env.BUILD_DIR }}/conanbuild.sh
+          cmake -B ${{ env.BUILD_DIR }} . \
+            -DCMAKE_TOOLCHAIN_FILE=${{ env.BUILD_DIR }}/conan_toolchain.cmake \
             -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
-            -DOPIO_TEST_PREFIX=${{ matrix.build_type }}_${JACOBI_CONAN_PROFILE}_
+            -DJACOBI_TEST_PREFIX=${{ matrix.build_type }}_${{ env.JACOBI_CONAN_PROFILE }}_
 
       - name: CMake build
         shell: bash
         run: |
-          cmake --build _build -j $(nproc) --verbose
+          cmake --build ${{ env.BUILD_DIR }} -j $(nproc) --verbose
 
       - name: Run ctest
         shell: bash
+        id: ctest
         run: |
-          ctest -T test --timeout 60 --output-on-failure --test-dir _build
+          ctest -T test --timeout 60 \
+            --output-on-failure \
+            --output-junit ctest-junit.xml \
+            --test-dir ${{ env.BUILD_DIR }}
+
+      - name: Publish test report
+        if: ${{ always() && steps.ctest.outcome != 'skipped' }}
+        uses: dorny/test-reporter@v2
+        with:
+          name: Tests ((${{ matrix.conan_profile }}, ${{ matrix.build_type }}))
+          path: ${{ env.BUILD_DIR }}/ctest-junit.xml
+          reporter: java-junit
