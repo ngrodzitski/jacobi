@@ -56,9 +56,9 @@ namespace details
  *       The functionality is extracted into independent class
  *       to make it available for unit-tests and keep things SOLID.
  *
- * @note Implementation assumes we alway have a double-linked list
- *       that contains all the items (indexes). Initialy the list follows the
- *       natural order of 0...N which alignes with how indexes in items storage
+ * @note Implementation assumes we always have a double-linked list
+ *       that contains all the items (indexes). Initially the list follows the
+ *       natural order of 0...N which aligns with how indexes in items storage
  *       must be assigned with a initial fill of the cache.
  */
 class lru_kick_list_t
@@ -80,7 +80,7 @@ public:
      *
      * @pre The size must be less then a max number representable with index_type_t
      *      (note: one elements (which is last) is reserved as a anchor node
-     *      which effectively store head and tal of the list).
+     *      which effectively store head and tail of the list).
      */
     explicit lru_kick_list_t( std::size_t size )
         : m_nodes_count{ []( auto s )
@@ -193,7 +193,7 @@ private:
             const auto prev = m_nodes[ i ].prev;
             const auto next = m_nodes[ i ].next;
 
-            // Make neighbours of eleminated node linked:
+            // Make neighbors of eliminated node linked:
             m_nodes[ prev ].next = next;
             m_nodes[ next ].prev = prev;
         }
@@ -255,7 +255,7 @@ private:
      *
      * This enables us to write a unified algo in use_index() implementation
      * for edge cases (the node assigned to that index is a tail or a head)
-     * and for noram case (node somewhere in the middle of the list).
+     * and for normal case (node somewhere in the middle of the list).
      */
     const index_type_t m_nodes_count;
     const std::unique_ptr< node_t[] > m_nodes;
@@ -457,8 +457,10 @@ private:
 
             for( details::lru_kick_list_t::index_type_t i = 0; i < size; ++i )
             {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wbitwise-instead-of-logical"
+#if defined( __clang__ )
+#    pragma clang diagnostic push
+#    pragma clang diagnostic ignored "-Wbitwise-instead-of-logical"
+#endif  // defined(__clang__)
                 if( ( prices[ i ] == p ) & ( nullptr != levels[ i ] ) )
                 {
                     lvl   = levels[ i ];
@@ -466,7 +468,9 @@ private:
                     index = i;
                 }
             }
-#pragma clang diagnostic pop
+#if defined( __clang__ )
+#    pragma clang diagnostic pop
+#endif  // defined(__clang__)
 
             return std::make_tuple( lvl, it, index );
         }

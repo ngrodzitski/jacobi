@@ -107,7 +107,7 @@ struct soa_price_level_order_node_pos_t
 //
 
 /**
- * @brief Reference agregate to locate the order exactly.
+ * @brief Reference aggregate to locate the order exactly.
  */
 template < typename Node_Position_Type >
 struct soa_price_level_order_reference_t

@@ -42,7 +42,8 @@ inline namespace v1
  *
  * Implements the following strategy:
  *     * vector storage starts ([0] element) with the price level
- *       for price0 which is the level that is most far away from the oposite side.
+ *       for price0 which is the level that is most far away from the opposite
+ * side.
  *     * At end of the vector ([N-1] element N is the size of the vector)
  *       the top level is stored, so that the levels that experience most of the
  *       events (those one's that are close to BBO) are at the end of the storage.
@@ -161,11 +162,15 @@ private:
     [[nodiscard]] std::pair< price_level_t *, typename levels_table_t::iterator >
     level_at( order_price_t price )
     {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wbitwise-instead-of-logical"
+#if defined( __clang__ )
+#    pragma clang diagnostic push
+#    pragma clang diagnostic ignored "-Wbitwise-instead-of-logical"
+#endif  // defined(__clang__)
         const bool is_new_base_price =
             price_ops_t{}.lt( m_price0, price ) | m_price_levels.empty();
-#pragma clang diagnostic pop
+#if defined( __clang__ )
+#    pragma clang diagnostic pop
+#endif  // defined(__clang__)
 
         if( is_new_base_price ) [[unlikely]]
         {
@@ -316,18 +321,19 @@ namespace v2
  *
  * Implements the following strategy:
  *     * vector storage starts ([0] element) with the price level
- *       for price0 which is the level that is most far away from the oposite side.
+ *       for price0 which is the level that is most far away from the opposite
+ * side.
  *     * vector storage ends with the price level that is most closer to the
- * oposite side (e.g. lower-offer prices and higher bid-prices)
+ *       opposite side (e.g. lower-offer prices and higher bid-prices)
  *     * When trade side experiences a move forward (a new levels closer to the
- *       oposite side must be added) - new levels are pushed back.
+ *       opposite side must be added) - new levels are pushed back.
  *     * When trade side experiences a move backward (a new levels further away
- *       from the oposite side must be added) they are inserted in the
- *       beginning of the vector storage. A little overprovision is considered
+ *       from the opposite side must be added) they are inserted in the
+ *       beginning of the vector storage. A little over-provision is considered
  *       so we are not hit by series of moving backwards.
  *     * If current top price level becomes empty we do not pop elements
- *       from the back but search thenext top price.
- *     * The top price is stored as a separate veriable.
+ *       from the back but search the next top price.
+ *     * The top price is stored as a separate variable.
  *     * if the top price is worse then storage base price it means
  *       the table is empty.
  */
@@ -456,11 +462,15 @@ private:
     [[nodiscard]] std::pair< price_level_t *, typename levels_table_t::iterator >
     level_at( order_price_t price )
     {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wbitwise-instead-of-logical"
+#if defined( __clang__ )
+#    pragma clang diagnostic push
+#    pragma clang diagnostic ignored "-Wbitwise-instead-of-logical"
+#endif  // defined(__clang__)
         const bool is_new_base_price =
             price_ops_t{}.lt( m_price0, price ) | m_price_levels.empty();
-#pragma clang diagnostic pop
+#if defined( __clang__ )
+#    pragma clang diagnostic pop
+#endif  // defined(__clang__)
         if( is_new_base_price ) [[unlikely]]
         {
             // Here: we must handle new base price.
@@ -471,13 +481,13 @@ private:
                 // first price that appears within orders table.
                 //
                 // We will set the base price to 2*overprovision_count_unit
-                // backward and reserve the vector to be 4*overprovision_count_unit
-                // the level for this exact price would be created
-                // later as a result of handling
+                // backward and reserve the vector to be 4 *
+                // overprovision_count_unit the level for this exact price would be
+                // created later as a result of handling
                 m_price0 = price_ops_t{}.advance_backward(
                     price, order_price_t{ 2 * overprovision_count_unit } );
 
-                // We also Init top price as well:
+                // We also init top price as well:
                 m_top_price = m_price0;
 
                 m_price_levels.emplace_back(
@@ -577,7 +587,7 @@ private:
             // Step back the top price by one minimum.
             m_top_price = price_ops_t{}.advance_backward( m_top_price );
 
-            // Reverse(lvl_it) wil point to the prev element
+            // Reverse(lvl_it) will point to the prev element
             // of the element that lvl_it is pointing,
             // Which is what we want because we already "inspected"
             // and since it is retired - we know it is empty.

@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: BSL-1.0
 
 /**
- * @file Contains a specificly designed list implementation which
- *       enables a better use of cache while stil having a
+ * @file Contains a specifically designed list implementation which
+ *       enables a better use of cache while still having a
  *       quick insert-to-back/remove.
  */
 #pragma once
@@ -27,7 +27,7 @@ namespace details
 //
 
 /**
- * @brief Create 64bit mask with a single bit set to 1 at a given position.
+ * @brief Create 64-bit mask with a single bit set to 1 at a given position.
  */
 constexpr inline std::uint64_t make_1bit_mask( int pos )
 {
@@ -39,7 +39,7 @@ constexpr inline std::uint64_t make_1bit_mask( int pos )
 //
 
 /**
- * @brief Create 64bit mask with a single bit set to 0 at a given position.
+ * @brief Create 64-bit mask with a single bit set to 0 at a given position.
  */
 constexpr inline std::uint64_t make_1bit_mask_inverted( int pos )
 {
@@ -270,8 +270,6 @@ public:
         using chunk_iterator_t = std::remove_reference_t<
             decltype( std::declval< hosting_list_t >().begin() ) >;
 
-        // list_impl_t::template list_iterator< Is_Const >;
-
         iterator_t() = default;
 
         iterator_t( hosting_list_t * host )
@@ -475,7 +473,7 @@ private:
      * @brief Count of elements of type `T` stored in the chunked list.
      *
      * @note `m_chunks.size()` gives us the number of chunks not the elements.
-     *       while a single chunk can hold upto 64 elements.
+     *       while a single chunk can hold up to 64 elements.
      */
     std::size_t m_items_count{};
 };

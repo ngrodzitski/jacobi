@@ -212,7 +212,7 @@ struct absl_map_container_traits_t
 //
 
 /**
- * @brief An alies for std::map based map-orders-table.
+ * @brief An alias for std::map based map-orders-table.
  */
 template < Book_Impl_Data_Concept Book_Impl_Data, trade_side Side_Indicator >
 using absl_map_orders_table_t =

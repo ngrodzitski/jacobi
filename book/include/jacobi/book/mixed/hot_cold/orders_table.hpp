@@ -179,7 +179,7 @@ public:
         make_hot_storage_initial_state( initial_head_price, hot_levels_count );
 
         // fmt::print("HC LINE: {}\n", __LINE__ );
-        // Initialy when no top orders exist we consider top market order to be
+        // Initially when no top orders exist we consider top market order to be
         // at the end of hot levels. Which is basically the extreme price for given
         // trade side (price_manipulations::bottom_value()).
         m_top_level_virtual_index =
@@ -429,7 +429,7 @@ private:
     /**
      * @name Make two the segments for hot levels.
      *
-     * Since the arangement of a logical sequence of price levels in
+     * Since the arrangement of a logical sequence of price levels in
      * a vector storage for hot level is not fixed (starting from the first
      * element) we need to be able to tell 1 or 2 values for a lengths of a
      * segments of a logical levels.
@@ -764,7 +764,7 @@ private:
         // of the int64 range we stop sliding even if the new top price
         // is not positioned in the middle of the hot range.
         // This is an edge case handling, normally you don't have prices near
-        // the extreme values of int64 (espexially when it is given
+        // the extreme values of int64 (especially when it is given
         // the price is normalized).
         //            xxxxxxxxxxx
         //  Prices    xxxxxxxxxxx xxx - virtual prices,
@@ -931,7 +931,7 @@ private:
             //  So to make hot levels aligned with current trend
             //  we will shift the the hot levels, so that
             //  it current top would be in the middle:
-            //  Buttom of the Q2.
+            //  Bottom of the Q2.
 
             // clang-format off
 //    _______
@@ -974,11 +974,11 @@ private:
             //       and now that level became empty.
             //       And a new top level can only be found in cold storage.
 
-            // We have 2 subcases here:
+            // We have 2 sub-cases here:
             // 2.1. we got levels in cold storage (cold storage non-empty);
             // 2.2. cold storage is empty (it means that the order table is empty).
 
-            // In both cases we will ned the following value:
+            // In both cases we will need the following value:
             // Head price for the range at the extreme position for a given trade
             // side:
             //            xxxxxxxxxxx
@@ -1144,7 +1144,7 @@ private:
      * That means that the position where the head might be in the middle of the
      * vector. That is because hot levels are basically a sliding window
      * on the tape of all prices. And on event the "window" slides
-     * we prefer not to rellocate all elemnts so that the head is alway at
+     * we prefer not to relocate all elements so that the head is always at
      * pos=0.
      *
      * Here is an example (buy side, count of_hot levels=5):
@@ -1158,8 +1158,8 @@ private:
      *    98       100
      *    97       99
      *    96       98
-     *            <97> goes to cold (if not mpty)
-     *            <96> goes to cold (if not mpty)
+     *            <97> goes to cold (if not empty)
+     *            <96> goes to cold (if not empty)
      * // Vector modification
      * Before:
      * [0*]  [1]  [2]  [3]  [4]      * - head_pos=0
@@ -1171,7 +1171,7 @@ private:
      * @endcode
      *
      * Moving window towards this side "lower" prices is less straightforward
-     * in terms of what trigers it but the same adjustments to
+     * in terms of what triggers it but the same adjustments to
      * what is the header are applied.
      */
     std::vector< price_level_t > m_hot_levels;
@@ -1190,7 +1190,7 @@ private:
 
     /**
      * @brief The bitmask for quick real position calculations
-     *        in the hot levels starage.
+     *        in the hot levels storage.
      */
     std::size_t m_hot_levels_mask;
 
@@ -1207,7 +1207,7 @@ private:
      *
      * Stores orders that do not fit into hot range.
      * Levels in that storage must contain orders either orders or
-     * meaningfull stats (executed orders numbers).
+     * meaningful stats (executed orders numbers).
      */
     cold_levels_table_t m_cold_levels;
 };

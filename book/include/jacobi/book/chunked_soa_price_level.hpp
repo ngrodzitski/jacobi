@@ -130,7 +130,7 @@ struct soa_chunk_node_t
         const auto prev = links[ pos ].prev;
         const auto next = links[ pos ].next;
 
-        // Make neighbours of eleminated node linked:
+        // Make neighbours of eliminated node linked:
         links[ prev ].next = next;
         links[ next ].prev = prev;
     }

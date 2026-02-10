@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: BSL-1.0
 
 /**
- * @file Orders table srtp base-class part
- *       for trade-side orderes table implementation.
+ * @file Orders table CRTP base-class part
+ *       for trade-side orders table implementation.
  */
 
 #pragma once
@@ -284,7 +284,7 @@ public:
         {
             // We must first ask for new level,
             // Because it might trigger storage change (reallocation)
-            // whilch might invalidata old_lvl_ref part
+            // which might invalidate old_lvl_ref part
             // (which for linear storage is vector::iterator).
             // So we ask for new level first thus the storage
             // would insert a new level if necessary

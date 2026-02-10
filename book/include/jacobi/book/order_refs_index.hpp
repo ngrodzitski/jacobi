@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: BSL-1.0
 
 /**
- * @file Orders table srtp base-class part
- *       for trade-side orderes table implementation.
+ * @file Orders references part for book implementation.
  */
 
 #pragma once

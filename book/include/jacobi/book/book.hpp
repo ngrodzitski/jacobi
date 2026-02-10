@@ -281,7 +281,7 @@ public:
 
     /**
      * @brief Delete an order with a known iterator in the table of
-     *        order-references' indes.
+     *        order-references' indexes.
      *
      * @pre Order MUST exist in the book.
      */
@@ -294,7 +294,7 @@ public:
 
     /**
      * @brief Delete an order with a known iterator in the table of
-     *        order-references' indes.
+     *        order-references' indexes.
      *
      * @pre Order MUST exist in the book.
      */
@@ -469,7 +469,7 @@ public:
     /**
      * @name Access orders.
      *
-     * @note Index nust not be used in disruptive way,
+     * @note Index must not be used in disruptive way,
      *       so that book state is not broken.
      */
     /// @{
@@ -519,7 +519,7 @@ private:
 //
 
 /**
- * @brief An implementation of intial book params
+ * @brief An implementation of initial book params
  *        that creates default constructed values that compose the book.
  */
 template < Book_Traits_Concept Book_Traits >

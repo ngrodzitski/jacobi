@@ -171,16 +171,16 @@ struct order_price_operations_t
     /**
      * @brief The bottom aka MAX price of the trade side
      *        (best price for a given trade side assuming someone
-     *        is crazy enaugh to match it).
+     *        is crazy enough to match it).
      *
      * * For sell side "best" means the highest price (we can't sell any higher).
      * * For buy side "best" means the lowest price (we can't buy lower).
      *
      * This is used for shifting the hot/cold levels so that we
      * know if we are near the bottom and we will not run into having levels
-     * with price lower than that (wich would be an overflow).
+     * with price lower than that (which would be an overflow).
      *
-     * Here is an example (assume price is 8bit int => [-128, +127], N=5):
+     * Here is an example (assume price is 8-bit int => [-128, +127], N=5):
      * @code
      *              ...
      *              127  s s s s <---- absolute best sell price for seller.
@@ -209,7 +209,7 @@ struct order_price_operations_t
     /**
      * @brief  The opposite of max value.
      *
-     * Here is an example (assume price is 8bit int => [-128, +127], N=5):
+     * Here is an example (assume price is 8-bit int => [-128, +127], N=5):
      * @code
      *              ...
      *              127  s s s s <---- absolute best sell price for seller.
@@ -273,7 +273,7 @@ struct order_price_operations_t
      * @brief A comparator to be used with map types.
      *
      * Provides a comparator that makes ordering in a way
-     * that values closer to the oposite trade side come first.
+     * that values closer to the opposite trade side come first.
      *
      * @code
      *             ...
@@ -324,7 +324,7 @@ struct order_price_operations_t
      *
      * The distance respects the ordering of the price for a given trade side.
      * It means that that when `a` is "less" aka
-     * "closer to the oposite trade side than `b`
+     * "closer to the opposite trade side than `b`
      * the result is a positive value of order-price.
      *
      * @code
@@ -400,7 +400,7 @@ struct order_price_operations_t
     /**
      * @brief Advances price forward (in the meaning of a given trade side).
      *
-     * The direction forward is the direction towards the oposite trade side.
+     * The direction forward is the direction towards the opposite trade side.
      *
      * @code
      *             ...
@@ -462,7 +462,7 @@ struct order_price_operations_t
     /**
      * @brief Advances price backward (in the meaning of a given trade side).
      *
-     * Does the oposite to `advance_forward(p, d)`.
+     * Does the opposite to `advance_forward(p, d)`.
      */
     [[nodiscard]] order_price_t advance_backward(
         order_price_t price,
