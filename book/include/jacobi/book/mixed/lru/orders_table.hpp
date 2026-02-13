@@ -83,26 +83,30 @@ public:
      *      which effectively store head and tail of the list).
      */
     explicit lru_kick_list_t( std::size_t size )
-        : m_nodes_count{ []( auto s )
-                         {
-                             assert( s <= max_elements_count );
-                             return static_cast< index_type_t >( s );
-                         }( size ) }
-        , m_nodes( new node_t[ m_nodes_count + 1 ] )
+        : m_nodes_count{ static_cast< index_type_t >(
+              std::clamp< std::size_t >( size, 4, max_elements_count ) ) }
+        , m_nodes(
+              std::make_unique_for_overwrite< node_t[] >( m_nodes_count + 1 ) )
     {
+#if defined( __GNUC__ ) && !defined( __clang__ )
+#    pragma GCC diagnostic push
+#    pragma GCC diagnostic ignored "-Wstringop-overflow"
+#endif
         // Make initial list
         // first must have node (n aka anchor) as its previous:
         m_nodes[ 0 ] = node_t{ .prev = m_nodes_count, .next = 1 };
         for( index_type_t i = 1; i < m_nodes_count; ++i )
         {
-            m_nodes[ i ] = node_t{ .prev = static_cast< index_type_t >( i - 1 ),
-                                   .next = static_cast< index_type_t >( i + 1 ) };
+            m_nodes[ i ].prev = i - 1;
+            m_nodes[ i ].next = i + 1;
         }
         // Node (n aka anchor) next (aka head) must be linked to first node.
         m_nodes[ m_nodes_count ] =
             node_t{ .prev = static_cast< index_type_t >( m_nodes_count - 1 ),
                     .next = 0 };
-
+#if defined( __GNUC__ ) && !defined( __clang__ )
+#    pragma GCC diagnostic pop
+#endif
         //clang-format off
         // The initial list looks like this:
         //                                                           **ANCHOR**
