@@ -1,0 +1,16 @@
+[settings]
+arch=x86_64
+build_type=Release
+compiler=clang
+compiler.cppstd=20
+compiler.libcxx=libc++
+compiler.version=18
+os=Linux
+
+[conf]
+tools.build:compiler_executables={'c': 'clang-20', 'cpp': 'clang++-20'}
+
+tools.build:cxxflags=["-march=znver4"]
+tools.build:cflags=["-march=znver4"]
+
+tools.info.package_id:confs=["tools.build:cxxflags", "tools.build:cflags"]
