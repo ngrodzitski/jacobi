@@ -1,4 +1,4 @@
-include(ubu-gcc-14)
+include(ubu-clang-20)
 [settings]
 build_type=Debug
 
@@ -8,3 +8,4 @@ tools.build:cflags=["-fsanitize=address,undefined", "-fsanitize-address-use-afte
 tools.build:exelinkflags=["-fsanitize=address,undefined"]
 tools.build:sharedlinkflags=["-fsanitize=address,undefined"]
 tools.info.package_id:confs=["tools.build:cxxflags", "tools.build:cflags", "tools.build:exelinkflags", "tools.build:sharedlinkflags"]
+

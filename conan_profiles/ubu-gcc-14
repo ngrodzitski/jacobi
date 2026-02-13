@@ -7,6 +7,5 @@ compiler.libcxx=libstdc++11
 compiler.version=14
 os=Linux
 
-[buildenv]
-CC=gcc-14
-CXX=g++-14
+[conf]
+tools.build:compiler_executables={'c': 'gcc-14', 'cpp': 'g++-14'}
