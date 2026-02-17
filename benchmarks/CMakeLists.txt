@@ -213,6 +213,26 @@ jacobi_add_latency_bench( _bench.latency.mixed_lru_levels_storage
 
 # ===============================================
 # ===============================================
+jacobi_add_throughput_bench( _bench.throughput.mixed_lru_v2_levels_storage.multi_book
+    SOURCES
+    mixed_lru_v2_levels_storage_book_types.hpp
+    throughput/mixed_lru_v2_levels_storage_multi_book.cpp
+)
+# ===============================================
+jacobi_add_throughput_bench( _bench.throughput.mixed_lru_v2_levels_storage.single_book
+    SOURCES
+    mixed_lru_v2_levels_storage_book_types.hpp
+    throughput/mixed_lru_v2_levels_storage_single_book.cpp
+)
+# ===============================================
+jacobi_add_latency_bench( _bench.latency.mixed_lru_v2_levels_storage
+    SOURCES
+    mixed_lru_v2_levels_storage_book_types.hpp
+    latency/mixed_lru_v2_levels_storage_book.cpp
+)
+
+# ===============================================
+# ===============================================
 jacobi_add_throughput_bench( _bench.throughput.mixed_hot_cold_levels_storage.multi_book
     SOURCES
     mixed_hot_cold_levels_storage_book_types.hpp

@@ -13,6 +13,9 @@
 #include <map>
 
 #include <range/v3/view/map.hpp>
+#include <range/v3/view/transform.hpp>
+
+#include <boost/intrusive/set.hpp>
 
 #include <jacobi/book/vocabulary_types.hpp>
 #include <jacobi/book/price_level.hpp>
@@ -192,25 +195,25 @@ public:
 private:
     void insert( index_type_t i, index_type_t pos )
     {
+        const auto t = m_nodes[ pos ].prev;
+
+        if( t == i ) return;
+
         // Let's eliminate i-th node and insert it to the end.
         {
-            const auto prev = m_nodes[ i ].prev;
-            const auto next = m_nodes[ i ].next;
+            const auto node_i = m_nodes[ i ];
 
             // Make neighbors of eliminated node linked:
-            m_nodes[ prev ].next = next;
-            m_nodes[ next ].prev = prev;
+            m_nodes[ node_i.prev ].next = node_i.next;
+            m_nodes[ node_i.next ].prev = node_i.prev;
         }
 
         // Here: we have i-th node disconnected from the list.
         //       What we need to do is to add i-th as new node
         //       before pos-node.
 
-        const auto t = m_nodes[ pos ].prev;
-
         // Set new linkage for i-th node.
-        m_nodes[ i ].next = pos;
-        m_nodes[ i ].prev = t;
+        m_nodes[ i ] = node_t{ .prev = t, .next = pos };
 
         m_nodes[ pos ].prev = i;
         m_nodes[ t ].next   = i;
@@ -470,6 +473,7 @@ private:
                     lvl   = levels[ i ];
                     it    = iterators[ i ];
                     index = i;
+                    break;
                 }
             }
 #if defined( __clang__ )
@@ -485,6 +489,7 @@ private:
             prices[ i ]    = it->first;
             levels[ i ]    = &( it->second );
             iterators[ i ] = it;
+            kick_list.use_index( i );
         }
 
         void remove_entry( std::size_t index )
@@ -496,5 +501,359 @@ private:
 
     cached_levels_t m_cache;
 };
+
+namespace v2
+{
+
+namespace details
+{
+
+//
+// set_cmp_t
+//
+
+/**
+ * @brief A Comparator integrator for using with boost::intrusiveL::set.
+ */
+template < typename Price_Level_Node, trade_side Side_Indicator >
+struct set_cmp_t : public order_price_operations_t< Side_Indicator >::cmp_t
+{
+    using base_t = order_price_operations_t< Side_Indicator >::cmp_t;
+
+    using base_t::operator();
+
+    [[nodiscard]] bool operator()( const Price_Level_Node & n1,
+                                   const Price_Level_Node & n2 ) const noexcept
+    {
+        return ( *this )( n1.plvl.price(), n2.plvl.price() );
+    }
+    [[nodiscard]] bool operator()( const Price_Level_Node & node,
+                                   order_price_t p ) const noexcept
+    {
+        return ( *this )( node.plvl.price(), p );
+    }
+    [[nodiscard]] bool operator()( order_price_t p,
+                                   const Price_Level_Node & node ) const noexcept
+    {
+        return ( *this )( p, node.plvl.price() );
+    }
+};
+
+using hook_type_t = boost::intrusive::set_member_hook<>;
+
+//
+// price_level_node_t
+//
+
+/**
+ * @brief Intrusive node that contains meaningful price level.
+ */
+template < Price_Level_Concept Price_Level >
+struct price_level_node_t
+{
+    price_level_node_t( Price_Level && plvl_obj )
+        : plvl{ std::move( plvl_obj ) }
+    {
+    }
+
+    hook_type_t hook;
+    Price_Level plvl;
+};
+
+}  // namespace details
+
+//
+// orders_table_t
+//
+
+/**
+ * @brief Represents a table of orders for a single trade side.
+ *
+ * @tparam Order_Reference_Table  A table to store orders ids
+ *                                Implementation assumes external
+ *                                ownership.
+ *
+ * @tparam Side_Indicator         Which side of the book this table represents.
+ *
+ * @pre The value type of Order_Reference_Table is expected to
+ *      be compatible with price_level_t::reference_t.
+ *
+ * Implements the following strategy:
+ *     * Use boost::intrusive::set as storage for levels.
+ *     * Cached hot-nodes are stored in linear storage.
+ *     * Intrusiveness makes it possible to embedding cached nodes
+ *       into set for sorted access.
+ */
+template < Book_Impl_Data_Concept Book_Impl_Data, trade_side Side_Indicator >
+class orders_table_t
+    : public orders_table_crtp_base_t<
+          orders_table_t< Book_Impl_Data, Side_Indicator >,
+          Book_Impl_Data,
+          Side_Indicator >
+{
+public:
+    // Base class must have access to private functions.
+    friend class orders_table_crtp_base_t< orders_table_t,
+                                           Book_Impl_Data,
+                                           Side_Indicator >;
+
+    using base_type_t =
+        orders_table_crtp_base_t< orders_table_t, Book_Impl_Data, Side_Indicator >;
+
+    using typename base_type_t::price_level_t;
+    using typename base_type_t::book_private_data_t;
+
+    explicit orders_table_t( book_private_data_t & data )
+        : base_type_t{ data }
+        , m_cache{ this->m_book_private_data.price_levels_factory }
+    {
+    }
+
+    explicit orders_table_t( std::size_t cache_size, book_private_data_t & data )
+        : base_type_t{ data }
+        , m_cache{ this->m_book_private_data.price_levels_factory, cache_size }
+    {
+    }
+
+    ~orders_table_t()
+    {
+        m_price_levels.clear_and_dispose(
+            [ this ]( auto * node ) noexcept
+            {
+                if( !m_cache.is_cached_node( node ) ) delete node;
+            } );
+    }
+
+    [[nodiscard]] bool empty() const noexcept { return m_price_levels.empty(); }
+
+    /**
+     * @brief Get top price.
+     */
+    [[nodiscard]] std::optional< order_price_t > top_price() const noexcept
+    {
+        if( empty() )
+        {
+            return std::nullopt;
+        }
+        return m_price_levels.begin()->plvl.price();
+    }
+
+    /**
+     * @brief Get top price quantity.
+     */
+    [[nodiscard]] std::optional< order_qty_t > top_price_qty() const noexcept
+    {
+        if( empty() )
+        {
+            return std::nullopt;
+        }
+        return m_price_levels.begin()->plvl.orders_qty();
+    }
+
+    /**
+     * @name Access levels.
+     */
+    [[nodiscard]] auto levels_range() const noexcept
+    {
+        return m_price_levels
+               | ranges::views::transform(
+                   []( const auto & node ) -> const price_level_t &
+                   { return node.plvl; } );
+    }
+
+    /**
+     * @brief Get the first order (the one that should be matched for execution)
+     *        on this table.
+     *
+     * @pre Table MUST NOT be empty.
+     */
+    [[nodiscard]] order_t first_order() const noexcept
+    {
+        assert( !empty() );
+        return m_price_levels.begin()->plvl.first_order();
+    }
+
+private:
+    using price_level_node_t = details::price_level_node_t< price_level_t >;
+    using cmp_t = details::set_cmp_t< price_level_node_t, Side_Indicator >;
+
+    using levels_table_t = boost::intrusive::set<
+        price_level_node_t,
+        boost::intrusive::member_hook< price_level_node_t,
+                                       details::hook_type_t,
+                                       &price_level_node_t::hook >,
+        boost::intrusive::compare< cmp_t > >;
+
+    /**
+     * @brief  Get access to a price level of a given price.
+     */
+    [[nodiscard]] std::pair< price_level_t *, std::size_t > level_at(
+        order_price_t price )
+    {
+        auto [ lvl, index ] = m_cache.find_entry( price );
+
+        if( !lvl ) [[unlikely]]
+        {
+            // Position to where relocate (or create a new) a node
+            // with requested price level:
+            index = m_cache.kick_list.lru_index();
+
+            if( m_cache.levels[ index ].hook.is_linked() )
+            {
+                // We must pop the meaningful node from cache
+                // to occupy a new position within cached array of nodes.
+                auto * new_node = m_cache.allocate_node(
+                    std::move( m_cache.levels[ index ].plvl ) );
+
+                auto it = m_price_levels.iterator_to( m_cache.levels[ index ] );
+                m_price_levels.replace_node( it, *new_node );
+
+                assert( new_node->hook.is_linked() );
+            }
+
+            assert( !m_cache.levels[ index ].hook.is_linked() );
+
+            auto it = m_price_levels.find( price, cmp_t{} );
+            if( m_price_levels.end() == it )
+            {
+                m_cache.levels[ index ].plvl =
+                    this->m_book_private_data.price_levels_factory
+                        .make_price_level( price );
+
+                m_price_levels.insert( m_cache.levels[ index ] );
+            }
+            else
+            {
+                m_cache.levels[ index ].plvl  = std::move( it->plvl );
+                price_level_node_t * old_node = &( *it );
+                assert( !m_cache.is_cached_node( old_node ) );
+                m_price_levels.replace_node( it, m_cache.levels[ index ] );
+
+                assert( !old_node->hook.is_linked() );
+                m_cache.deallocate_node( old_node );
+            }
+            m_cache.prices[ index ] = price;
+
+            assert( m_cache.levels[ index ].hook.is_linked() );
+
+            lvl = &( m_cache.levels[ index ].plvl );
+        }
+
+        assert( lvl );
+
+        m_cache.kick_list.use_index( index );
+
+        return std::make_pair( lvl, index );
+    }
+
+    /**
+     * @brief Get top price level.
+     *
+     * @pre Table must not be empty.
+     */
+    [[nodiscard]] price_level_t & top_level() noexcept
+    {
+        assert( !this->empty() );
+        return m_price_levels.begin()->plvl;
+    }
+
+    /**
+     * @brief Handle a price level becoming empty
+     */
+    void retire_level( std::size_t index )
+    {
+        assert( m_cache.levels[ index ].hook.is_linked() );
+
+        auto it = m_price_levels.iterator_to( m_cache.levels[ index ] );
+        m_price_levels.erase( it );
+
+        assert( !m_cache.levels[ index ].hook.is_linked() );
+
+        m_cache.kick_list.free_index( index );
+    }
+
+    /**
+     * @brief A storage for price levels.
+     *
+     * Each levels contain a queue of orders at a given price.
+     */
+    levels_table_t m_price_levels;
+
+    //
+    // cached_levels_t
+    //
+    struct cached_levels_t
+    {
+        template < typename Price_Level_Factory >
+        explicit cached_levels_t( Price_Level_Factory & price_levels_factory,
+                                  std::size_t cap = 32 )
+            : kick_list{ cap }
+        {
+            prices.resize( cap );
+            levels.reserve( cap );
+
+            while( levels.size() != cap )
+            {
+                levels.emplace_back(
+                    price_levels_factory.make_price_level( order_price_t{ 0 } ) );
+            }
+        }
+
+        std::vector< order_price_t > prices;
+        std::vector< price_level_node_t > levels;
+
+        [[nodiscard]] price_level_node_t * allocate_node( price_level_t && plvl )
+        {
+            if( nodes_pool.empty() )
+            {
+                return new price_level_node_t{ std::move( plvl ) };
+            }
+            price_level_node_t * node = nodes_pool.back().release();
+            nodes_pool.pop_back();
+            node->plvl = std::move( plvl );
+            return node;
+        }
+
+        void deallocate_node( price_level_node_t * node )
+        {
+            nodes_pool.emplace_back( node );
+        }
+
+        std::vector< std::unique_ptr< price_level_node_t > > nodes_pool;
+
+        using lru_kick_list_t =
+            ::jacobi::book::mixed::lru::details::lru_kick_list_t;
+        lru_kick_list_t kick_list;
+
+        [[nodiscard]] std::tuple< price_level_t *, std::size_t > find_entry(
+            order_price_t p ) noexcept
+        {
+            price_level_t * lvl = nullptr;
+            auto index          = lru_kick_list_t::invalid_index;
+
+            for( lru_kick_list_t::index_type_t i = 0; i < levels.size(); ++i )
+            {
+                if( ( prices[ i ] == p ) && ( levels[ i ].hook.is_linked() ) )
+                {
+                    lvl   = &levels[ i ].plvl;
+                    index = i;
+                    break;
+                }
+            }
+
+            return std::make_tuple( lvl, index );
+        }
+
+        [[nodiscard]] bool is_cached_node(
+            const price_level_node_t * p ) const noexcept
+        {
+            return levels.data() <= p && p < ( levels.data() + levels.size() );
+        }
+    };
+
+    cached_levels_t m_cache;
+};
+
+}  // namespace v2
 
 }  // namespace jacobi::book::mixed::lru

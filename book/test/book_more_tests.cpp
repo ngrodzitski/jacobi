@@ -813,6 +813,114 @@ using JacobiBookBuildingTestsTypes = ::testing::Types<
                           order_refs_index_boost_unordered_flat_map_t >,
         mixed::lru::orders_table_t >
 
+    // =========================================================================
+    // MIXED LRU V2:
+    ,
+    book_traits_t< book_impl_data_t< std_price_levels_factory_t<
+                                         std_price_level_t< std_list_traits_t > >,
+                                     order_refs_index_std_unordered_map_t >,
+                   mixed::lru::v2::orders_table_t >,
+    book_traits_t< book_impl_data_t< std_price_levels_factory_t<
+                                         std_price_level_t< std_list_traits_t > >,
+                                     order_refs_index_tsl_robin_map_t >,
+                   mixed::lru::v2::orders_table_t >,
+    book_traits_t< book_impl_data_t< std_price_levels_factory_t<
+                                         std_price_level_t< std_list_traits_t > >,
+                                     order_refs_index_boost_unordered_flat_map_t >,
+                   mixed::lru::v2::orders_table_t >,
+    book_traits_t< book_impl_data_t< std_price_levels_factory_t<
+                                         std_price_level_t< std_list_traits_t > >,
+                                     order_refs_index_absl_flat_hash_map_t >,
+                   mixed::lru::v2::orders_table_t >,
+
+    book_traits_t< book_impl_data_t< std_price_levels_factory_t<
+                                         std_price_level_t< plf_list_traits_t > >,
+                                     order_refs_index_std_unordered_map_t >,
+                   mixed::lru::v2::orders_table_t >,
+    book_traits_t< book_impl_data_t< std_price_levels_factory_t<
+                                         std_price_level_t< plf_list_traits_t > >,
+                                     order_refs_index_tsl_robin_map_t >,
+                   mixed::lru::v2::orders_table_t >,
+    book_traits_t< book_impl_data_t< std_price_levels_factory_t<
+                                         std_price_level_t< plf_list_traits_t > >,
+                                     order_refs_index_boost_unordered_flat_map_t >,
+                   mixed::lru::v2::orders_table_t >,
+    book_traits_t< book_impl_data_t< std_price_levels_factory_t<
+                                         std_price_level_t< plf_list_traits_t > >,
+                                     order_refs_index_absl_flat_hash_map_t >,
+                   mixed::lru::v2::orders_table_t >,
+
+    book_traits_t< book_impl_data_t< shared_list_container_price_levels_factory_t<
+                                         shared_list_container_price_level_t<
+                                             std_list_traits_t > >,
+                                     order_refs_index_std_unordered_map_t >,
+                   mixed::lru::v2::orders_table_t >,
+    book_traits_t< book_impl_data_t< shared_list_container_price_levels_factory_t<
+                                         shared_list_container_price_level_t<
+                                             std_list_traits_t > >,
+                                     order_refs_index_tsl_robin_map_t >,
+                   mixed::lru::v2::orders_table_t >,
+    book_traits_t< book_impl_data_t< shared_list_container_price_levels_factory_t<
+                                         shared_list_container_price_level_t<
+                                             std_list_traits_t > >,
+                                     order_refs_index_boost_unordered_flat_map_t >,
+                   mixed::lru::v2::orders_table_t >,
+    book_traits_t< book_impl_data_t< shared_list_container_price_levels_factory_t<
+                                         shared_list_container_price_level_t<
+                                             std_list_traits_t > >,
+                                     order_refs_index_absl_flat_hash_map_t >,
+                   mixed::lru::v2::orders_table_t >,
+
+    book_traits_t< book_impl_data_t< shared_list_container_price_levels_factory_t<
+                                         shared_list_container_price_level_t<
+                                             plf_list_traits_t > >,
+                                     order_refs_index_std_unordered_map_t >,
+                   mixed::lru::v2::orders_table_t >,
+    book_traits_t< book_impl_data_t< shared_list_container_price_levels_factory_t<
+                                         shared_list_container_price_level_t<
+                                             plf_list_traits_t > >,
+                                     order_refs_index_tsl_robin_map_t >,
+                   mixed::lru::v2::orders_table_t >,
+    book_traits_t< book_impl_data_t< shared_list_container_price_levels_factory_t<
+                                         shared_list_container_price_level_t<
+                                             plf_list_traits_t > >,
+                                     order_refs_index_boost_unordered_flat_map_t >,
+                   mixed::lru::v2::orders_table_t >,
+    book_traits_t< book_impl_data_t< shared_list_container_price_levels_factory_t<
+                                         shared_list_container_price_level_t<
+                                             plf_list_traits_t > >,
+                                     order_refs_index_absl_flat_hash_map_t >,
+                   mixed::lru::v2::orders_table_t >,
+    book_traits_t< book_impl_data_t< soa_price_levels_factory_t< soa_price_level_t<
+                                         std_vector_soa_price_level_traits_t > >,
+                                     order_refs_index_boost_unordered_flat_map_t >,
+                   mixed::lru::v2::orders_table_t >,
+    book_traits_t<
+        book_impl_data_t< soa_price_levels_factory_t< soa_price_level_t<
+                              boost_smallvec_soa_price_level_traits_t< 16 > > >,
+                          order_refs_index_boost_unordered_flat_map_t >,
+        mixed::lru::v2::orders_table_t >,
+    book_traits_t<
+        book_impl_data_t< chunked_price_levels_factory_t<
+                              chunked_price_level_t< std_chunk_list_traits_t > >,
+                          order_refs_index_boost_unordered_flat_map_t >,
+        mixed::lru::v2::orders_table_t >,
+    book_traits_t<
+        book_impl_data_t< chunked_price_levels_factory_t<
+                              chunked_price_level_t< plf_chunk_list_traits_t > >,
+                          order_refs_index_boost_unordered_flat_map_t >,
+        mixed::lru::v2::orders_table_t >,
+    book_traits_t<
+        book_impl_data_t< chunked_soa_price_levels_factory_t<
+                              chunked_soa_price_level_t< std_list_traits_t > >,
+                          order_refs_index_boost_unordered_flat_map_t >,
+        mixed::lru::v2::orders_table_t >,
+    book_traits_t<
+        book_impl_data_t< chunked_soa_price_levels_factory_t<
+                              chunked_soa_price_level_t< plf_list_traits_t > >,
+                          order_refs_index_boost_unordered_flat_map_t >,
+        mixed::lru::v2::orders_table_t >
+
 #elif defined( JACOBI_BOOK_TESTS_SPLIT_MIXED_HOT_COLD_ONES )
     // =========================================================================
     // MIXED HOT/COLD:

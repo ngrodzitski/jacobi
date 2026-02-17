@@ -243,6 +243,24 @@ using test_orders_table_sell_t =
 #undef JACOBI_BOOK_TYPE_ORDERS_TABLE_FIXTURE
 #undef JACOBI_BOOK_ORDERS_TABLE_TYPE
 
+namespace v2
+{
+
+using test_orders_table_sell_t =
+    ::jacobi::book::mixed::lru::v2::orders_table_t< book_impl_data_t,
+                                                    trade_side::sell >;
+
+#define JACOBI_BOOK_TYPE_ORDERS_TABLE JacobiBookMixedLruV2OrdersTableSell
+#define JACOBI_BOOK_TYPE_ORDERS_TABLE_FIXTURE \
+    JacobiBookMixedLruV2OrdersTableSellFixture
+#define JACOBI_BOOK_ORDERS_TABLE_TYPE test_orders_table_sell_t
+#include "../../map/orders_table_reusable_set_of_tests.ipp"
+#undef JACOBI_BOOK_TYPE_ORDERS_TABLE
+#undef JACOBI_BOOK_TYPE_ORDERS_TABLE_FIXTURE
+#undef JACOBI_BOOK_ORDERS_TABLE_TYPE
+
+}  // namespace v2
+
 }  // anonymous namespace
 
 }  // namespace jacobi::book::mixed::lru
