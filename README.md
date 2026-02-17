@@ -1008,6 +1008,12 @@ sudo cpupower frequency-set --governor performance
 sudo cpupower frequency-set --governor powersave
 cpupower frequency-info
 
+# Enable perf to gather data:
+sudo sh -c 'echo 0 >/proc/sys/kernel/perf_event_paranoid'
+
+# See perf report with full names of symbols:
+perf report -Mintel -g 'graph,0.5,caller' --stdio | less
+
 # Pin thread:
 taskset -c 0 $my_benchmark_app $params
 ```
