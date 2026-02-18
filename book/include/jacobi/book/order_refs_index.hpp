@@ -265,7 +265,7 @@ struct order_refs_index_boost_unordered_flat_map_t
 //
 
 /**
- * @brief Order refs index using `boost::unordered::unordered_flat_map`.
+ * @brief Order refs index using `absl::flat_hash_map`.
  *
  * Implements Order_Refs_Index_Concept.
  */

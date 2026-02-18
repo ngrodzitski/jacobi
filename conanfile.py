@@ -132,6 +132,9 @@ class JacobiConan(ConanFile):
         tc.variables[
             "JACOBI_BUILD_TESTS"
         ] = not self._is_package_only()
+        tc.variables[
+            "JACOBI_BUILD_BENCHMARKS"
+        ] = not self._is_package_only()
 
         tc.generate()
 
@@ -149,11 +152,14 @@ class JacobiConan(ConanFile):
         rmdir(self, os.path.join(self.package_folder, "lib", "cmake"))
 
     def package_info(self):
+        # NOT WORKING
+        # because not meant to be a reusable library
+        # but a benchmark suite to experiment with implementations.
         self.cpp_info.set_property("cmake_file_name", "jacobi")
         self.cpp_info.set_property("cmake_target_name", "jacobi::jacobi")
 
-        self.cpp_info.names["cmake_find_package"] = "MyTestLib"
-        self.cpp_info.names["cmake_find_package_multi"] = "MyTestLib"
+        self.cpp_info.names["cmake_find_package"] = "jacobi"
+        self.cpp_info.names["cmake_find_package_multi"] = "jacobi"
 
         component_name = "_jacobi"
 
@@ -167,7 +173,7 @@ class JacobiConan(ConanFile):
 
         # TODO: consider adding alloaces
         # self.cpp_info.components[component_name].set_property("cmake_target_aliases", [f"{self.name}::{self.name}"])
-        self.cpp_info.components[component_name].libs = ["jacobi"]
+        # self.cpp_info.components[component_name].libs = ["jacobi"]
 
         self.cpp_info.components[component_name].requires = [
             # TODO: add dependencies here.

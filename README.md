@@ -348,7 +348,7 @@ the trade-offs between memory overhead, cache locality, and update complexity.
    and enabling reuse of free slots that appear after deleting an order.
    Trade-off is that the storage capacity never shrinks;
    it grows to the high-water mark of orders on that level.
-   Implementatiosn:`soa_price_level_t<List_Traits>`
+   Implementation:`soa_price_level_t<List_Traits>`
    ([jacobi/book/soa_price_level.hpp](./book/include/jacobi/book/soa_price_level.hpp)).
 
    Containers:
@@ -470,8 +470,8 @@ Cons:
 See implementation here: [jacobi/book/map/orders_table.hpp](./book/include/jacobi/book/map/orders_table.hpp)
 
 **JACOBI** benchmarks 2 implementations:
-  * `std::map<K, V>`
-  * `absl:btree_map<K, V>`
+  * `std::map<K, V>` (map);
+  * `absl:btree_map<K, V>` (absl_map).
 
 ### Linear Storage
 
@@ -528,6 +528,14 @@ See implementations here: [jacobi/book/linear/orders_table.hpp](./book/include/j
 ### Mixed Storage: LRU
 
 This approach uses a small LRU cache in front of a map storage.
+For lookup does a search in cache and only if fails to find asked price level
+searches in orderes map/set structure.
+
+**JACOBI** benchmarks 2 implementations:
+  * `std::map<K, V>` levels storage with a linear LRU cache (pointer based)
+  * `boost:intrusive::set<K, V>` levels storage (mixed_lru).
+    with cached "nodes" in linear storage embedded into set structure
+    (mixed_lru_v2).
 
 See implementation here: [jacobi/book/mixed/lru/orders_table.hpp](./book/include/jacobi/book/mixed/lru/orders_table.hpp)
 
@@ -609,7 +617,7 @@ RANGE  │  [491]                    │                               [491]
           [...]                                                    [...]
 ```
 
-See implementation here: [jacobi/book/mixed/hot_cold/orders_table.hpp](./book/include/jacobi/book/mixed/lru/orders_table.hpp)
+See implementation here: [jacobi/book/mixed/hot_cold/orders_table.hpp](./book/include/jacobi/book/mixed/hot_cold/orders_table.hpp)
 
 ## Order References Index
 

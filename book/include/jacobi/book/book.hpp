@@ -249,6 +249,12 @@ public:
      *
      * @pre Order MUST NOT exist in the table.
      *
+     * @note Depending on the hash-table implementation
+     *       Iterator returnd by this function
+     *       to the entry in Order References Table created for a given order
+     *       might be invalidated upon the next rehash
+     *       (that might be caused by the next insertion).
+     *
      * @return An iterator to an entry in order-references' index.
      */
     template < trade_side Trade_Side >
@@ -264,6 +270,12 @@ public:
      * @brief Add new order to this table.
      *
      * @pre Order MUST NOT exist in the table.
+     *
+     * @note Depending on the hash-table implementation
+     *       Iterator returnd by this function
+     *       to the entry in Order References Table created for a given order
+     *       might be invalidated upon the next rehash
+     *       (that might be caused by the next insertion).
      *
      * @return An iterator to an entry in order-references' index.
      */

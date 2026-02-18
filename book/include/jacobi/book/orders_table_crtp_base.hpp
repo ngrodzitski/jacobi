@@ -50,7 +50,7 @@ concept Book_Impl_Data_Concept = requires( Book_Impl_Data & data ) {
  */
 template < Order_Refs_Index_Concept Order_Refs_Index,
            Price_Levels_Factory_Concept Price_Levels_Factory >
-class book_impl_data_t
+struct book_impl_data_t
 {
     using order_refs_index_t     = Order_Refs_Index;
     using price_levels_factory_t = Price_Levels_Factory;
@@ -122,6 +122,12 @@ public:
      * @brief Add new order to this table.
      *
      * @pre Order MUST NOT exist in the table.
+     *
+     * @note Depending on the hash-table implementation
+     *       Iterator returnd by this function
+     *       to the entry in Order References Table created for a given order
+     *       might be invalidated upon the next rehash
+     *       (that might be caused by the next insertion).
      */
     auto add_order( order_t order )
     {

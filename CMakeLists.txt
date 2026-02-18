@@ -21,11 +21,11 @@ include( "${JACOBI_CMAKE_SCRIPTS_DIR}/code_coverage.cmake" )
 # Build options
 option(JACOBI_INSTALL           "Generate install target"  ON)
 option(JACOBI_BUILD_TESTS       "Build tests"              ON)
-option(JACOBI_BUILD_BENCHMARKS  "Build tests"              ON)
+option(JACOBI_BUILD_BENCHMARKS  "Build benchmarks"         ON)
 option(JACOBI_GCC_CODE_COVERAGE "Build with code coverage" OFF)
 # ------------------------------------------------------------------------------
 
-message(STATUS "JACOBI_INSTAL:            ${JACOBI_INSTALL}")
+message(STATUS "JACOBI_INSTALL:           ${JACOBI_INSTALL}")
 message(STATUS "JACOBI_BUILD_TEST:        ${JACOBI_BUILD_TESTS}")
 message(STATUS "JACOBI_GCC_CODE_COVERAGE: ${JACOBI_GCC_CODE_COVERAGE}")
 
