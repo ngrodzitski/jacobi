@@ -42,8 +42,10 @@ It serves two purposes:
     to see which strategy yields the best performance for your
     data and your hardware.
 
-Once built, you can run the suite against your dataset on your hardware.
-TODO-instructions and TODO-experiment-example.
+Once built, you can run the suite against your datasets on your hardware:
+  * See instructions on how to run
+    [benchmark experiment](./benchmark_experiment/RunningBenchmarkExperiment.md);
+  * TODO-experiment-example.
 
 ## Technical details
 
