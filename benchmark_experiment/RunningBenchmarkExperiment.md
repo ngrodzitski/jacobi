@@ -1,5 +1,17 @@
 # Running Benchmark Experiment
 
+  * [Dataset Preparation](#dataset-preparation)
+  * [Build the Benchmark Apps](#build-the-benchmark-apps)
+  * [Experiment Settings (JSON)](#experiment-settings-json)
+  * [Running the Experiment](#running-the-experiment)
+  * [Post-Processing](#post-processing)
+  * [Results Analysis](#results-analysis)
+     * [Best results for each Orders Table approach for each file](#best-results-for-each-orders-table-approach-for-each-file)
+     * [Rank Order Book implementations against a given dataset](#rank-order-book-implementations-against-a-given-dataset)
+  * [Visualizing the Data (HTML Reports)](#visualizing-the-data-html-reports)
+
+<!-- Created by https://github.com/ekalinin/github-markdown-toc -->
+
 This document details how to execute a comprehensive benchmark suite
 against the various **JACOBI** Order Book implementations.
 
@@ -339,5 +351,21 @@ ORDER BY
     -- p90
     -- p50
 desc
-
 ```
+
+## Visualizing the Data (HTML Reports)
+
+Raw numbers in a SQLite database are great for automated queries,
+but to actually spot performance cliffs and latency spikes, you need graphs.
+
+**JACOBI** provides two scripts to generate static HTML reports for manual analysis.
+
+  * The "Data-Centric" View ([visualize_results_html_by_datafile.py](./visualize_results_html_by_datafile.py))
+
+    Use this when you want to see how every implementation handled
+    a specific market condition (a single data file).
+
+  * The "Implementation-Centric" View ([visualize_results_html_by_implementation.py](./visualize_results_html_by_implementation.py))
+
+    Use this when you want to see how a single implementation
+    performs across all datasets.
