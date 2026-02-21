@@ -287,10 +287,10 @@ is hard-coded for case of 302 events data files.
 SELECT
     -- ==========================================
     -- Implementation:
-    orders_table_storage as ots,
-    components as c,
+    compiler,
+    orders_table_storage,
+    components,
     -- ==========================================
-
 
     avg(mps) as avg_mps,
     min(mps) as min_mps,
@@ -342,11 +342,13 @@ SELECT
         LIMIT 1 OFFSET 2 ) as worst_2
     -- ==========================================
 
-from measurements as main
+FROM measurements as main
 GROUP BY orders_table_storage, components
 ORDER BY
-    avg_mps
+    -- Weighted importance of characteristics:
+    -- avg_mps + p99 + p90 + p50
     -- Or alternatively:
+    avg_mps
     -- p99
     -- p90
     -- p50
