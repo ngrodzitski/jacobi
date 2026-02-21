@@ -1,0 +1,103 @@
+{
+    "bin_dir": "./_clang20_release/bin",
+    "data_dir": "./_snapshots",
+    "wrapper": "taskset -c 2",
+    "binaries": [
+        // FORMAT:
+        // {
+        //   "file": "new_impl_v2",
+        //   "alias": "Optimized_V2",
+        //   "type": "full|range" // default "full"
+        // }
+
+        {
+            "file": "_bench.throughput.map_levels_storage.single_book",
+            "alias": "map",
+            "type": "range"
+        },
+
+        // Almost always worse than std::map
+        // {
+        //     "file": "_bench.throughput.absl_map_levels_storage.single_book",
+        //     "alias": "absl_map",
+        //     "type": "range"
+        // },
+        {
+            "file": "_bench.throughput.linear_v1_levels_storage.single_book",
+            "alias": "linear_v1",
+            "type": "range"
+        },
+        {
+            "file": "_bench.throughput.linear_v2_levels_storage.single_book",
+            "alias": "linear_v2",
+            "type": "range"
+        },
+        {
+            "file": "_bench.throughput.linear_v3_levels_storage.single_book",
+            "alias": "linear_v3",
+            "type": "range"
+        },
+
+        {
+            "file": "_bench.throughput.mixed_hot_cold_levels_storage.single_book",
+            "alias": "mixed_hot_cold_h32",
+            "type": "range",
+            "env": { "JACOBI_BENCHMARK_HOT_STORAGE_SIZE": "32"}
+        },
+        {
+            "file": "_bench.throughput.mixed_hot_cold_levels_storage.single_book",
+            "alias": "mixed_hot_cold_h64",
+            "type": "range",
+            "env": { "JACOBI_BENCHMARK_HOT_STORAGE_SIZE": "64"}
+        },
+        {
+            "file": "_bench.throughput.mixed_hot_cold_levels_storage.single_book",
+            "alias": "mixed_hot_cold_h128",
+            "type": "range",
+            "env": { "JACOBI_BENCHMARK_HOT_STORAGE_SIZE": "128"}
+        },
+        {
+            "file": "_bench.throughput.mixed_hot_cold_levels_storage.single_book",
+            "alias": "mixed_hot_cold_h256",
+            "type": "range",
+            "env": { "JACOBI_BENCHMARK_HOT_STORAGE_SIZE": "256"}
+        },
+        {
+            "file": "_bench.throughput.mixed_hot_cold_levels_storage.single_book",
+            "alias": "mixed_hot_cold_h1024",
+            "type": "range",
+            "env": { "JACOBI_BENCHMARK_HOT_STORAGE_SIZE": "1024"}
+        },
+
+        // Never better than the std::map:
+        // {
+        //     "file": "_bench.throughput.mixed_lru_levels_storage.single_book",
+        //     "alias": "mixed_lru",
+        //     "type": "range"
+        // },
+    ],
+    "matrix" : {
+        "bsn": [
+            "bsn1",
+            // "bsn2"
+        ],
+        "plvl": [
+            "plvl11","plvl12",
+            "plvl21","plvl22",
+            "plvl30","plvl31",
+            "plvl41","plvl42",
+            "plvl51","plvl52"
+        ],
+
+        "refIX": [
+            // "refIX1",
+            "refIX2",
+            "refIX3",
+            "refIX4"
+        ],
+    },
+    "extra_args": [
+    "--benchmark_min_time=1s",
+    // "--benchmark_repetitions=1"
+    ]
+}

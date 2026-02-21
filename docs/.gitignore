@@ -1,0 +1,5 @@
+*/raw_results/*.json
+*/results/*.csv
+*/results/*.db
+
+*.jacobi_data
