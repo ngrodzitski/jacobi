@@ -45,7 +45,7 @@ It serves two purposes:
 Once built, you can run the suite against your datasets on your hardware:
   * See instructions on how to run
     [benchmark experiment](./benchmark_experiment/RunningBenchmarkExperiment.md);
-  * TODO-experiment-example.
+  * See the example of benchmark [here](https://ngrodzitski.github.io/jacobi/).
 
 ## Technical details
 
@@ -708,7 +708,7 @@ Each Orders Table Strategy compiles into its own binaries:
   * `_bench.throughput.ORDERS_TABLE_CODE_levels_storage.multi_book`;
   * `_bench.latency.ORDERS_TABLE_CODE_levels_storage`.
 
-Where `ORDERS_TABLE_CODE` is on of:
+Where `ORDERS_TABLE_CODE` is one of:
   * `map`, see [ordered map storage](#ordered-map-storage);
   * `absl_map`, see [ordered map storage](#ordered-map-storage);
   * `linear_v1`, see [linear storage](#linear-storage);
