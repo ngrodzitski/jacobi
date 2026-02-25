@@ -639,6 +639,35 @@ This forces the underlying linear storage (`std::vector<PLVL>`)
 to constantly reallocate and move memory as the top/bottom bounds
 of the order book expand beyond the current vector capacity.
 
+**Confirmation**: deeper inspection of the datasets perfectly
+corroborates this guess. The linear implementations are being destroyed
+by extreme outlier orders (often called "stub quotes").
+
+  * `273_148k.jacobi_data`: For the first ~75K events,
+    the book operates comfortably in a tight price range of [2100, 10,000].
+    Then, an extreme SELL order is added at price `1,455,000` (normalized).
+    Because the linear approach maps prices to vector indices,
+    this single event forces the `std::vector<PLVL>` to immediately
+    allocate ~1.44 million new, empty price levels.
+    This not only wastes massive amounts of memory,
+    but as the price subsequently moves and sets new all-time bounds,
+    the vector is forced to reallocate again.
+    Moving millions of non-trivial price-level objects
+    via move-constructors completely stalls the CPU pipeline.
+
+  * `083_694k.jacobi_data`: Exhibits an identical pathology.
+    After ~330K events, an outlier SELL order hits at `1,803,000`.
+    The resulting massive reallocation is followed by further price degradation,
+    triggering secondary reallocations.
+
+  * `241_100k.jacobi_data`: Follows the exact same pattern.
+
+  * `186_1944k.jacobi_data`: Abuses the linear array in the same way
+    (an extreme SELL order arrives at 3,100,000).
+    However, it performs slightly better than the others
+    because the price does not continue to push the bounds outward,
+    sparing the system from subsequent secondary reallocations.
+
 ### The Mixed Hot/Cold Pathological Case
 
 Sample command to inspect perf-stats (hot storage size is 128 but other sizes are used too):
@@ -722,3 +751,27 @@ while for `` performance decreases the higher hot storage size is.
 | 285_166k.jacobi_data | mixed_hot_cold_h1024     | bsn1_plvl11_refIX3 | 5.73371     | 5.56357       |
 
 But manually checking `h=2048` it once again becomes satisfactory.
+
+**Confirmation**:
+    Upon checking the data we see lots of wide jumps of the top price.
+
+  * `284_238k.jacobi_data`
+
+|    **jump size**  | **count** |
+|-------------------|-----------|
+| 100+              | 18939     |
+| 200+              | 11531     |
+| 300+              | 4961      |
+| 400+              | 1036      |
+| 500+              | 30        |
+
+  * `284_238k.jacobi_data`:
+
+|    **jump size**  | **count** |
+|-------------------|-----------|
+| 100+              | 8589      |
+| 200+              | 5777      |
+| 300+              | 3996      |
+| 400+              | 3525      |
+| 500+              | 3523      |
+
