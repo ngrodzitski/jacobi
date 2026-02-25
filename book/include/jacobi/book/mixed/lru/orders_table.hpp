@@ -71,7 +71,7 @@ public:
     inline static constexpr std::size_t invalid_index =
         std::numeric_limits< index_type_t >::max();
     inline static constexpr std::size_t max_elements_count =
-        std::numeric_limits< index_type_t >::max() - 1;
+        std::numeric_limits< index_type_t >::max();
 
     /**
      * @brief Construct LRU list.
@@ -305,6 +305,15 @@ public:
     using typename base_type_t::price_level_t;
     using typename base_type_t::book_private_data_t;
 
+    /**
+     * @brief Constructor with explicit cache size.
+     *
+     * @note The maximum cache size is 255.
+     *
+     * @param  cache_size  Cache size, must be in `[4..255)`
+     *
+     * @return            [description]
+     */
     explicit orders_table_t( std::size_t cache_size, book_private_data_t & data )
         : base_type_t{ data }
         , m_cache{ cache_size }
@@ -436,16 +445,15 @@ private:
     //
     struct cached_levels_t
     {
-        explicit cached_levels_t( std::size_t cap = 32 )
-            : capacity{ cap }
-            , prices{ new order_price_t[ capacity ] }
-            , levels{ new price_level_t *[ capacity ] }
-            , iterators{ new typename levels_table_t::iterator[ capacity ] }
-            , kick_list{ cap }
+        explicit cached_levels_t( std::size_t size = 32 )
+            : size{ std::clamp< std::size_t >( size, 4, 254 ) }
+            , prices{ new order_price_t[ size ] }
+            , levels{ new price_level_t *[ size ] }
+            , iterators{ new typename levels_table_t::iterator[ size ] }
+            , kick_list{ size }
         {
         }
 
-        const std::size_t capacity{};
         std::size_t size{};
         std::unique_ptr< order_price_t[] > prices;
         std::unique_ptr< price_level_t *[] > levels;
