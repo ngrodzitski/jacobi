@@ -260,6 +260,34 @@ TEST( JacobiBookVocabularyTypes, OrderPriceOperationsMin )
 }
 
 // NOLINTNEXTLINE
+TEST( JacobiBookVocabularyTypes, OrderPriceOperationsMax )
+{
+    {
+        order_price_operations_t< trade_side::sell > op;
+        EXPECT_EQ( op.max( order_price_t{ 100 }, order_price_t{ 33 } ),
+                   order_price_t{ 100 } );
+
+        EXPECT_EQ( op.max( order_price_t{ -100 }, order_price_t{ -1 } ),
+                   order_price_t{ -1 } );
+
+        EXPECT_EQ( op.max( order_price_t{ 100 }, order_price_t{ 100 } ),
+                   order_price_t{ 100 } );
+    }
+
+    {
+        order_price_operations_t< trade_side::buy > op;
+        EXPECT_EQ( op.max( order_price_t{ 100 }, order_price_t{ 33 } ),
+                   order_price_t{ 33 } );
+
+        EXPECT_EQ( op.max( order_price_t{ -100 }, order_price_t{ -1 } ),
+                   order_price_t{ -100 } );
+
+        EXPECT_EQ( op.max( order_price_t{ 100 }, order_price_t{ 100 } ),
+                   order_price_t{ 100 } );
+    }
+}
+
+// NOLINTNEXTLINE
 TEST( JacobiBookVocabularyTypes, OrderPriceOperationsComparatorWithMap )
 {
     using buy_map_t =

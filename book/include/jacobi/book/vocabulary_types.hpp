@@ -93,7 +93,7 @@ struct order_price_t
     [[nodiscard]] int to_int() const noexcept
     {
         assert( value_ <= 0x7FFF'FFFFLL );
-        assert( value_ >= -0x8FFF'FFFFLL );
+        assert( value_ >= -0x8000'0000LL );
         return static_cast< int >( value_ );
     }
 };
@@ -316,6 +316,22 @@ struct order_price_operations_t
         else
         {
             return std::min( a, b );
+        }
+    }
+
+    /**
+     * @brief Get the trade-side biased maximum of the prices.
+     */
+    [[nodiscard]] order_price_t max( order_price_t a,
+                                     order_price_t b ) const noexcept
+    {
+        if constexpr( trade_side::buy == Side_Indicator )
+        {
+            return std::min( a, b );
+        }
+        else
+        {
+            return std::max( a, b );
         }
     }
 
