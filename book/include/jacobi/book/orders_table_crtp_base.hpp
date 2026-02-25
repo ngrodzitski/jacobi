@@ -95,6 +95,8 @@ class orders_table_crtp_base_t
     /// @}
 
 public:
+    inline static constexpr trade_side trade_side_indicator = Side_Indicator;
+
     using book_private_data_t = Book_Impl_Data;
     using order_refs_index_t  = typename book_private_data_t::order_refs_index_t;
     using price_levels_factory_t =

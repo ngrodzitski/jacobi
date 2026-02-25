@@ -92,6 +92,14 @@ target_link_libraries(reset_ids_util PRIVATE
     jacobi::snapshots
 )
 
+add_executable(analyze_book analyze_book.cpp)
+
+target_link_libraries(analyze_book PRIVATE
+    CLI11::CLI11
+    jacobi::book
+    jacobi::snapshots
+)
+
 # ===============================================
 # ===============================================
 jacobi_add_throughput_bench( _bench.throughput.map_levels_storage.multi_book

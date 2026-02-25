@@ -8,6 +8,7 @@
 
 namespace jacobi::bench
 {
+
 //
 // std_map_levels_storage_book_impl_data_t
 //
