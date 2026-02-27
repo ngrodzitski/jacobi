@@ -97,6 +97,8 @@ endif ()
 if (JACOBI_BUILD_BENCHMARKS)
     find_package(benchmark REQUIRED)
     find_package(CLI11 REQUIRED)
+
+    add_subdirectory(benchmarks/utils)
     add_subdirectory(benchmarks)
 endif ()
 

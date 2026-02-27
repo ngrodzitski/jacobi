@@ -13,7 +13,7 @@
 
 #include <jacobi/book/vocabulary_types.hpp>
 
-#include "map_levels_storage_book_types.hpp"
+#include "../map_levels_storage_book_types.hpp"
 
 namespace jacobi::benchmark
 {
