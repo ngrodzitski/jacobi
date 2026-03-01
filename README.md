@@ -83,6 +83,16 @@ conan install . -pr:a ubu-clang-18 -s:a build_type=Debug --build missing -of _bu
 cmake --build _build_clang -j 6
 
 
+# With Nasdaq TotalView-ITCH 5.0 to jacobi_data converter:
+conan install -pr:a ./conan_profiles/ubu-gcc-11 -s:a build_type=Debug -o ntvitch=True --build missing -of _build .
+( source ./_build/conanbuild.sh && cmake -B_build . -DCMAKE_TOOLCHAIN_FILE=_build/conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Debug -DJACOBI_NTVITCH_CONVERTER=ON)
+cmake --build _build -j 6
+
+# With Nasdaq TotalView-ITCH 5.0 to jacobi_data converter:
+conan install -pr:a ./conan_profiles/ubu-gcc-11 -s:a build_type=Release -o ntvitch=True --build missing -of _build_release .
+( source ./_build_release/conanbuild.sh && cmake -B_build_release . -DCMAKE_TOOLCHAIN_FILE=_build_release/conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Release -DJACOBI_NTVITCH_CONVERTER=ON)
+cmake --build _build_release -j 6
+
 ```
 
 Running tests:

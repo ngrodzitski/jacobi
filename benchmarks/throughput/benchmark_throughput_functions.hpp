@@ -193,7 +193,7 @@ void multi_book_benchmark(
                             { return r1.book_id < r2.book_id; } )
               ->book_id;
 
-    if( books_count > 500 )
+    if( books_count > 10000 )
     {
         throw std::runtime_error{ fmt::format(
             "{} is too many books, file {} ", books_count, events_file_name ) };

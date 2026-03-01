@@ -13,3 +13,16 @@ target_link_libraries(analyze_book PRIVATE
     jacobi::book
     jacobi::snapshots
 )
+
+if (JACOBI_NTVITCH_CONVERTER)
+    add_executable(ntvitch2jacobi ntvitch2jacobi.cpp)
+
+    target_link_libraries(ntvitch2jacobi PRIVATE
+        CLI11::CLI11
+        boost::boost
+        jacobi::book
+        jacobi::snapshots
+        jacobi::ntvitch
+        jacobi::ntvitch_fmt
+    )
+endif ()

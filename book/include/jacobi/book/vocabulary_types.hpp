@@ -587,7 +587,7 @@ struct formatter< ::jacobi::book::order_id_t >
     auto format( const ::jacobi::book::order_id_t & id,
                  Format_Context & ctx ) const
     {
-        return fmt::format_to( ctx.out(), "0x{:X}", type_safe::get( id ) );
+        return fmt::format_to( ctx.out(), "{:X}", type_safe::get( id ) );
     }
 };
 

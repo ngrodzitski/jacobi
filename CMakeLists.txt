@@ -19,10 +19,11 @@ include( "${JACOBI_CMAKE_SCRIPTS_DIR}/code_coverage.cmake" )
 
 # ------------------------------------------------------------------------------
 # Build options
-option(JACOBI_INSTALL           "Generate install target"  ON)
-option(JACOBI_BUILD_TESTS       "Build tests"              ON)
-option(JACOBI_BUILD_BENCHMARKS  "Build benchmarks"         ON)
-option(JACOBI_GCC_CODE_COVERAGE "Build with code coverage" OFF)
+option(JACOBI_INSTALL           "Generate install target"                   ON)
+option(JACOBI_BUILD_TESTS       "Build tests"                               ON)
+option(JACOBI_BUILD_BENCHMARKS  "Build benchmarks"                          ON)
+option(JACOBI_GCC_CODE_COVERAGE "Build with code coverage"                  OFF)
+option(JACOBI_NTVITCH_CONVERTER "Build Nasdaq TotalView-ITCH 5.0 converter" OFF)
 # ------------------------------------------------------------------------------
 
 message(STATUS "JACOBI_INSTALL:           ${JACOBI_INSTALL}")
@@ -79,6 +80,9 @@ message(STATUS "jacobi SOVERSION: " ${JACOBI_SOVERSION})
 # ===================================
 add_subdirectory(jacobi)
 add_subdirectory(book)
+if (JACOBI_NTVITCH_CONVERTER)
+    add_subdirectory(ntvitch)
+endif ()
 
 if (JACOBI_BUILD_TESTS OR JACOBI_BUILD_BENCHMARKS)
     add_subdirectory(snapshots)
@@ -91,6 +95,9 @@ if (JACOBI_BUILD_TESTS)
 
     find_package(GTest MODULE REQUIRED)
 
+    if (JACOBI_NTVITCH_CONVERTER)
+        add_subdirectory(ntvitch/test)
+    endif ()
     add_subdirectory(book/test)
 endif ()
 

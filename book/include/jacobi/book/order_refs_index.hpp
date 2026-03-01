@@ -46,6 +46,7 @@ concept Order_Refs_Index_Concept = requires( Order_Refs_Index & index ) {
     typename Order_Refs_Index::value_t;
     typename Order_Refs_Index::order_reference_t;
     typename Order_Refs_Index::iterator_t;
+    typename Order_Refs_Index::const_iterator_t;
 
     {
         index.insert( std::declval< typename Order_Refs_Index::key_t >(),
@@ -58,12 +59,24 @@ concept Order_Refs_Index_Concept = requires( Order_Refs_Index & index ) {
         index.find( std::declval< typename Order_Refs_Index::key_t >() )
     } -> std::same_as< typename Order_Refs_Index::iterator_t >;
 
+    {
+        std::as_const( index ).find(
+            std::declval< typename Order_Refs_Index::key_t >() )
+    } -> std::same_as< typename Order_Refs_Index::const_iterator_t >;
+
     { index.end() } -> std::same_as< typename Order_Refs_Index::iterator_t >;
+    {
+        std::as_const( index ).end()
+    } -> std::same_as< typename Order_Refs_Index::const_iterator_t >;
 
     {
         index.access_value(
             std::declval< typename Order_Refs_Index::iterator_t >() )
     } -> std::same_as< typename Order_Refs_Index::value_t * >;
+    {
+        std::as_const( index ).access_value(
+            std::declval< typename Order_Refs_Index::iterator_t >() )
+    } -> std::same_as< typename Order_Refs_Index::value_t const * >;
 };
 
 //
@@ -116,7 +129,8 @@ struct order_refs_index_std_unordered_map_t
     using index_container_type_t =
         std::unordered_map< key_t, value_t, order_id_custom_hash_t >;
 
-    using iterator_t = index_container_type_t::iterator;
+    using iterator_t       = index_container_type_t::iterator;
+    using const_iterator_t = index_container_type_t::const_iterator;
 
     /**
      * @name Order refs' index interface.
@@ -132,10 +146,19 @@ struct order_refs_index_std_unordered_map_t
     void erase( iterator_t it ) { index.erase( it ); }
 
     [[nodiscard]] iterator_t find( key_t key ) { return index.find( key ); }
+    [[nodiscard]] const_iterator_t find( key_t key ) const
+    {
+        return index.find( key );
+    }
 
     [[nodiscard]] iterator_t end() { return index.end(); }
+    [[nodiscard]] const_iterator_t end() const { return index.end(); }
 
     [[nodiscard]] value_t * access_value( iterator_t it )
+    {
+        return &( it->second );
+    }
+    [[nodiscard]] const value_t * access_value( const_iterator_t it ) const
     {
         return &( it->second );
     }
@@ -174,7 +197,8 @@ struct order_refs_index_tsl_robin_map_t
     using index_container_type_t =
         tsl::robin_map< key_t, value_t, order_id_custom_hash_t >;
 
-    using iterator_t = index_container_type_t::iterator;
+    using iterator_t       = index_container_type_t::iterator;
+    using const_iterator_t = index_container_type_t::const_iterator;
 
     /**
      * @name Order refs' index interface.
@@ -190,10 +214,19 @@ struct order_refs_index_tsl_robin_map_t
     void erase( iterator_t it ) { index.erase( it ); }
 
     [[nodiscard]] iterator_t find( key_t key ) { return index.find( key ); }
+    [[nodiscard]] const_iterator_t find( key_t key ) const
+    {
+        return index.find( key );
+    }
 
     [[nodiscard]] iterator_t end() { return index.end(); }
+    [[nodiscard]] const_iterator_t end() const { return index.end(); }
 
     [[nodiscard]] value_t * access_value( iterator_t it )
+    {
+        return &( it.value() );
+    }
+    [[nodiscard]] const value_t * access_value( const_iterator_t it ) const
     {
         return &( it.value() );
     }
@@ -232,7 +265,8 @@ struct order_refs_index_boost_unordered_flat_map_t
     using index_container_type_t = boost::unordered::
         unordered_flat_map< key_t, value_t, order_id_custom_hash_t >;
 
-    using iterator_t = index_container_type_t::iterator;
+    using iterator_t       = index_container_type_t::iterator;
+    using const_iterator_t = index_container_type_t::const_iterator;
 
     /**
      * @name Order refs' index interface.
@@ -248,10 +282,19 @@ struct order_refs_index_boost_unordered_flat_map_t
     void erase( iterator_t it ) { index.erase( it ); }
 
     [[nodiscard]] iterator_t find( key_t key ) { return index.find( key ); }
+    [[nodiscard]] const_iterator_t find( key_t key ) const
+    {
+        return index.find( key );
+    }
 
     [[nodiscard]] iterator_t end() { return index.end(); }
+    [[nodiscard]] const_iterator_t end() const { return index.end(); }
 
     [[nodiscard]] value_t * access_value( iterator_t it )
+    {
+        return &( it->second );
+    }
+    [[nodiscard]] const value_t * access_value( const_iterator_t it ) const
     {
         return &( it->second );
     }
@@ -290,7 +333,8 @@ struct order_refs_index_absl_flat_hash_map_t
     using index_container_type_t =
         absl::flat_hash_map< key_t, value_t, order_id_custom_hash_t >;
 
-    using iterator_t = index_container_type_t::iterator;
+    using iterator_t       = index_container_type_t::iterator;
+    using const_iterator_t = index_container_type_t::const_iterator;
 
     /**
      * @name Order refs' index interface.
@@ -306,10 +350,19 @@ struct order_refs_index_absl_flat_hash_map_t
     void erase( iterator_t it ) { index.erase( it ); }
 
     [[nodiscard]] iterator_t find( key_t key ) { return index.find( key ); }
+    [[nodiscard]] const_iterator_t find( key_t key ) const
+    {
+        return index.find( key );
+    }
 
     [[nodiscard]] iterator_t end() { return index.end(); }
+    [[nodiscard]] const_iterator_t end() const { return index.end(); }
 
     [[nodiscard]] value_t * access_value( iterator_t it )
+    {
+        return &( it->second );
+    }
+    [[nodiscard]] const value_t * access_value( const_iterator_t it ) const
     {
         return &( it->second );
     }

@@ -30,9 +30,11 @@ class JacobiConan(ConanFile):
 
     options = {
         "fPIC": [True, False],
+        "ntvitch": [True, False],
     }
     default_options = {
         "fPIC": True,
+        "ntvitch": False,
     }
 
     name = "jacobi"
@@ -101,8 +103,8 @@ class JacobiConan(ConanFile):
             del self.options.fPIC
 
     def configure(self):
-        # Force Boost to be header-only
-        self.options["boost"].header_only = True
+        # Force Boost to be header-only if ntvitch is not enabled
+        self.options["boost"].header_only = not self.options.ntvitch
 
     def validate(self):
         minimal_cpp_standard = "20"

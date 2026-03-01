@@ -20,6 +20,7 @@ namespace jacobi::benchmark
 
 using book_traits_t = bench::bsn1_plvl11_refIX3_t;
 using book_t        = book::std_book_t< book_traits_t >;
+
 //
 // config_t
 //
