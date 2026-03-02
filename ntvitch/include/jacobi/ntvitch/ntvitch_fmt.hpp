@@ -874,13 +874,13 @@ struct formatter< jacobi::ntvitch::trade_non_cross_t >
     {
         return fmt::format_to(
             ctx.out(),
-            "{} {{order_reference_number: {}, side: {}, shares: {}, stock: {}, "
+            "{} {{order_reference_number: {}, side: {}, shares: {}, stock: '{}', "
             "price: {}, match_number: {}}}",
             static_cast< const jacobi::ntvitch::message_base_t & >( msg ),
             msg.order_reference_number(),
             msg.buy_sell(),
             msg.shares(),
-            msg.stock(),
+            msg.stock().substr( 0, msg.stock().find( ' ' ) ),
             msg.price(),
             msg.match_number() );
     }
@@ -896,11 +896,11 @@ struct formatter< jacobi::ntvitch::cross_trade_t >
     {
         return fmt::format_to(
             ctx.out(),
-            "{} {{shares: {}, stock: {}, cross_price: {}, match_number: {}, "
+            "{} {{shares: {}, stock: '{}', cross_price: {}, match_number: {}, "
             "cross: {}}}",
             static_cast< const jacobi::ntvitch::message_base_t & >( msg ),
             msg.shares(),
-            msg.stock(),
+            msg.stock().substr( 0, msg.stock().find( ' ' ) ),
             msg.cross_price(),
             msg.match_number(),
             msg.cross() );
@@ -933,14 +933,14 @@ struct formatter< jacobi::ntvitch::noii_t >
         return fmt::format_to(
             ctx.out(),
             "{} {{paired_shares: {}, imbalance_shares: {}, imbalance_dir: {}, "
-            "stock: {}, "
+            "stock: '{}', "
             "far_price: {}, near_price: {}, current_reference_price: {}, cross: "
             "{}, price_variation: {}}}",
             static_cast< const jacobi::ntvitch::message_base_t & >( msg ),
             msg.paired_shares(),
             msg.imbalance_shares(),
             msg.imbalance_dir(),
-            msg.stock(),
+            msg.stock().substr( 0, msg.stock().find( ' ' ) ),
             msg.far_price(),
             msg.near_price(),
             msg.current_reference_price(),
