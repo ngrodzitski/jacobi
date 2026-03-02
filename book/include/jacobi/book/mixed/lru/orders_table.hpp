@@ -430,6 +430,9 @@ private:
             m_cache.remove_entry( index );
             assert( it == lvl_it );
         }
+
+        this->m_book_private_data.price_levels_factory.retire_price_level(
+            std::move( lvl_it->second ) );
         m_price_levels.erase( lvl_it );
     }
 
@@ -772,7 +775,11 @@ private:
     {
         assert( m_cache.levels[ index ].hook.is_linked() );
 
+        this->m_book_private_data.price_levels_factory.retire_price_level(
+            std::move( m_cache.levels[ index ].plvl ) );
+
         auto it = m_price_levels.iterator_to( m_cache.levels[ index ] );
+
         m_price_levels.erase( it );
 
         assert( !m_cache.levels[ index ].hook.is_linked() );

@@ -157,6 +157,9 @@ private:
      */
     void retire_level( levels_table_t::iterator lvl_it )
     {
+        this->m_book_private_data.price_levels_factory.retire_price_level(
+            std::move( lvl_it->second ) );
+
         m_price_levels.erase( lvl_it );
     }
 

@@ -346,6 +346,9 @@ private:
             const auto price =
                 price_ops_t{}.advance_backward( head_price, order_price_t{ i } );
 
+            this->m_book_private_data.price_levels_factory.retire_price_level(
+                std::move( m_hot_levels[ i ] ) );
+
             m_hot_levels[ i ] =
                 this->m_book_private_data.price_levels_factory.make_price_level(
                     price );
@@ -724,6 +727,11 @@ private:
                     const auto p = lvl.price();
                     m_cold_levels.insert( std::make_pair( p, std::move( lvl ) ) );
                 }
+                else
+                {
+                    this->m_book_private_data.price_levels_factory
+                        .retire_price_level( std::move( lvl ) );
+                }
             } );
 
         m_hot_head_real_index = make_hot_real_index(
@@ -826,6 +834,10 @@ private:
 
             // Move existing levels from cold cache.
             assert( m_hot_levels[ m_hot_head_real_index ].empty() );
+
+            // Retire former price level object.
+            this->m_book_private_data.price_levels_factory.retire_price_level(
+                std::move( m_hot_levels[ m_hot_head_real_index ] ) );
 
             if( cold_it != end( m_cold_levels ) && cold_it->first == tail_price )
             {
@@ -1080,6 +1092,10 @@ private:
                     const auto price =
                         std::exchange( p, price_ops_t{}.advance_backward( p ) );
 
+                    // Retire former price level object.
+                    this->m_book_private_data.price_levels_factory
+                        .retire_price_level( std::move( lvl ) );
+
                     if( end( m_cold_levels ) != cold_it
                         && cold_it->first == price )
                     {
@@ -1131,8 +1147,13 @@ private:
         }
         else if( virtual_index_in_hot >= hot_storage_size< std::uint64_t >() )
         {
+            auto it = m_cold_levels.find( price );
+            assert( m_cold_levels.end() != it );
+
             assert( 0 != m_cold_levels.count( price ) );
-            m_cold_levels.erase( price );
+            this->m_book_private_data.price_levels_factory.retire_price_level(
+                std::move( it->second ) );
+            m_cold_levels.erase( it );
         }
     }
 

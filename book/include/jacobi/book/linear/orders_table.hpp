@@ -279,6 +279,8 @@ private:
         // We simply check empty levels at the end of the storage.
         while( !m_price_levels.empty() && m_price_levels.back().empty() )
         {
+            this->m_book_private_data.price_levels_factory.retire_price_level(
+                std::move( m_price_levels.back() ) );
             m_price_levels.pop_back();
         }
     }
@@ -576,7 +578,7 @@ private:
     }
 
     /**
-     * @brief Handle a price level becoming empty
+     * @brief Handle a price level becoming empty.
      */
     void retire_level( levels_table_t::iterator lvl_it )
     {
@@ -601,6 +603,12 @@ private:
             if( empty() ) [[unlikely]]
             {
                 // Reset the storage.
+                for( auto & plvl : m_price_levels )
+                {
+                    this->m_book_private_data.price_levels_factory
+                        .retire_price_level( std::move( plvl ) );
+                }
+
                 m_price_levels = make_initial_storage();
             }
         }
@@ -798,10 +806,13 @@ private:
     }
 
     /**
-     * @brief Handle a price level becoming empty
+     * @brief Handle a price level becoming empty.
      */
     void retire_level( levels_table_t::iterator lvl_it )
     {
+        this->m_book_private_data.price_levels_factory.retire_price_level(
+            std::move( *lvl_it ) );
+
         m_price_levels.erase( lvl_it );
     }
 
