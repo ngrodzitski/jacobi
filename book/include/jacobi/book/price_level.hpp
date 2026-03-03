@@ -122,6 +122,7 @@ public:
     {
         assert( ref.price() == m_price );
         assert( m_orders_qty > qty );
+        assert( ref.mutable_order().qty > qty );
         ref.mutable_order().qty -= qty;
         m_orders_qty -= qty;
         return ref;
@@ -386,6 +387,7 @@ public:
     {
         assert( ref.price() == m_price );
         assert( m_orders_qty > qty );
+        assert( ref.mutable_order().qty > qty );
         ref.mutable_order().qty -= qty;
         m_orders_qty -= qty;
         return ref;
