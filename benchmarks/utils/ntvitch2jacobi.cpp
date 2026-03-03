@@ -102,8 +102,9 @@ struct books_context_t
      *
      * Removes events for books that have less events than @c min_events_cnt.
      */
-    std::vector< snapshots::update_record_image_t > filter_events(
-        std::size_t min_events_cnt ) const
+    [[nodiscard]]
+    std::pair< std::vector< snapshots::update_record_image_t >, std::uint32_t >
+    filter_events( std::size_t min_events_cnt ) const
     {
         auto events = all_events;
 
@@ -127,7 +128,7 @@ struct books_context_t
             ev.book_id = updated_ids[ old_book_id ];
         }
 
-        return events;
+        return make_pair( std::move( events ), book_id_counter - 1 );
     }
 
     std::map< std::string, std::vector< snapshots::update_record_image_t > >
@@ -629,8 +630,10 @@ void convert_events( const config_t & cfg )
     fmt::print( "\nStore single book data\n", cfg.input_file_path );
 
     {
-        const auto fname = fmt::format(
-            "{}/{}all.jacobi_data", cfg.output_dir, cfg.out_file_suffix );
+        const auto fname = fmt::format( "{}/{}all_{}k.jacobi_data",
+                                        cfg.output_dir,
+                                        cfg.out_file_suffix,
+                                        books_context.all_events.size() / 1'000 );
 
         store_data( fname, books_context.all_events );
         fmt::print( "\nStore all data: {} (events_cnt={})\n",
@@ -639,16 +642,19 @@ void convert_events( const config_t & cfg )
     }
 
     {
-        const auto filtered_events =
+        const auto [ filtered_events, books_cnt ] =
             books_context.filter_events( cfg.filter_min_events );
 
-        const auto fname = fmt::format(
-            "{}/{}all_filtered.jacobi_data", cfg.output_dir, cfg.out_file_suffix );
+        const auto fname = fmt::format( "{}/{}all_filtered_{}k_b{}.jacobi_data",
+                                        cfg.output_dir,
+                                        cfg.out_file_suffix,
+                                        filtered_events.size() / 1'000,
+                                        books_cnt );
 
         store_data( fname, filtered_events );
         fmt::print( "\nStore all filtered data: {} (events_cnt={})\n",
                     fname,
-                    books_context.all_events.size() );
+                    filtered_events.size() );
     }
 
     {
@@ -658,10 +664,11 @@ void convert_events( const config_t & cfg )
         int fcount = 1;
         for( const auto & s : singles )
         {
-            const auto fname = fmt::format( "{}/{}{}.jacobi_data",
+            const auto fname = fmt::format( "{}/{}{}_{}k.jacobi_data",
                                             cfg.output_dir,
                                             cfg.out_file_suffix,
-                                            s.first );
+                                            s.first,
+                                            s.second.size() / 1'000 );
 
             store_data( fname, s.second );
             fmt::print( "\nStore single data: {} (events_cnt={}) {:3}/{}\n",
