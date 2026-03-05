@@ -10,6 +10,8 @@
 #include <type_traits>
 #include <vector>
 
+#include <boost/intrusive/list.hpp>
+
 #include <range/v3/view/generate.hpp>
 #include <range/v3/view/join.hpp>
 #include <range/v3/view/take_while.hpp>
@@ -19,6 +21,7 @@
 
 #include <jacobi/book/vocabulary_types.hpp>
 #include <jacobi/book/price_level_fwd.hpp>
+#include <jacobi/book/utils/intrusive_nodes_pool.hpp>
 
 namespace jacobi::book
 {
@@ -28,7 +31,7 @@ namespace jacobi::book
 //
 
 /**
- * @brief Reference agregate to locate the order exactly
+ * @brief Reference aggregate to locate the order exactly
  *        .
  */
 template < typename Iterator >
@@ -96,7 +99,7 @@ struct soa_chunk_node_t
 
     using links_array_t = std::array< links_t, chunk_size + 2 >;
 
-    links_array_t links{
+    inline static links_array_t init_links{
         links_t{ .prev = free_head_pos, .next = 1 },
         links_t{ .prev = 0, .next = 2 },
         links_t{ .prev = 1, .next = 3 },
@@ -113,14 +116,14 @@ struct soa_chunk_node_t
         links_t{ .prev = 12, .next = free_head_pos },
 
         // Anchor nodes for head and free head.
-
         // HEAD
         links_t{ .prev = head_pos, .next = head_pos },
 
         // FREE HEAD
-        links_t{ .prev = 13, .next = 0 },
-
+        links_t{ .prev = 13, .next = 0 }
     };
+
+    links_array_t links = init_links;
 
     std::array< order_qty_t, chunk_size > qty;
     std::array< order_id_t, chunk_size > id;
@@ -466,5 +469,383 @@ static_assert( Price_Levels_Factory_Concept< chunked_soa_price_levels_factory_t<
                    chunked_soa_price_level_t< std_list_traits_t > > > );
 static_assert( Price_Levels_Factory_Concept< chunked_soa_price_levels_factory_t<
                    chunked_soa_price_level_t< plf_list_traits_t > > > );
+
+namespace details
+{
+
+//
+// soa_chunk_intrusive_node_t
+//
+
+struct soa_chunk_intrusive_node_t : public soa_chunk_node_t
+{
+    /**
+     * @brief Intrusive list member hook
+     */
+    boost::intrusive::list_member_hook<> list_hook;
+};
+
+//
+// soa_chunk_intrusive_list_member_t
+//
+
+/**
+ * @brief Member hook for intrusive list.
+ */
+using soa_chunk_intrusive_list_member_t =
+    boost::intrusive::member_hook< soa_chunk_intrusive_node_t,
+                                   boost::intrusive::list_member_hook<>,
+                                   &soa_chunk_intrusive_node_t::list_hook >;
+
+//
+// soa_chunk_intrusive_list_t
+//
+
+using soa_chunk_intrusive_list_t =
+    boost::intrusive::list< soa_chunk_intrusive_node_t,
+                            soa_chunk_intrusive_list_member_t >;
+
+}  // namespace details
+
+//
+// intrusive_chunked_soa_price_level_order_reference_t
+//
+
+/**
+ * @brief Reference aggregate to locate the order exactly
+ *        .
+ */
+struct intrusive_chunked_soa_price_level_order_reference_t
+{
+public:
+    explicit intrusive_chunked_soa_price_level_order_reference_t() = default;
+
+    explicit intrusive_chunked_soa_price_level_order_reference_t(
+        order_price_t price,
+        details::soa_chunk_intrusive_node_t * chunk_ptr,
+        std::uint8_t pos )
+        : m_price{ price }
+        , m_chunk_ptr{ chunk_ptr }
+        , m_pos{ pos }
+    {
+    }
+
+    [[nodiscard]] order_price_t price() const noexcept { return m_price; }
+
+    [[nodiscard]] order_t make_order() const noexcept
+    {
+        return order_t{ .id    = m_chunk_ptr->id[ m_pos ],
+                        .qty   = m_chunk_ptr->qty[ m_pos ],
+                        .price = m_price };
+    }
+
+    /**
+     * @brief Copy reference from another instance.
+     */
+    void copy_from(
+        const intrusive_chunked_soa_price_level_order_reference_t & ref ) noexcept
+    {
+        m_price     = ref.m_price;
+        m_chunk_ptr = ref.m_chunk_ptr;
+        m_pos       = ref.m_pos;
+    }
+
+    [[nodiscard]] details::soa_chunk_intrusive_node_t * chunk_ptr() const noexcept
+    {
+        return m_chunk_ptr;
+    }
+
+    [[nodiscard]] std::uint8_t pos() const noexcept { return m_pos; }
+
+private:
+    order_price_t m_price;
+    details::soa_chunk_intrusive_node_t * m_chunk_ptr;
+    std::uint8_t m_pos;
+};
+
+//
+// intrusive_chunked_soa_price_level_t
+//
+
+/**
+ * @brief A storage of the orders on a given level using SOA to store data
+ *        and intrusive reusable nodes.
+ */
+template < typename Nodes_Pool >
+class intrusive_chunked_soa_price_level_t
+{
+public:
+    // We don't want copy this object.
+    intrusive_chunked_soa_price_level_t(
+        const intrusive_chunked_soa_price_level_t & ) = delete;
+    intrusive_chunked_soa_price_level_t & operator=(
+        const intrusive_chunked_soa_price_level_t & ) = delete;
+
+    explicit intrusive_chunked_soa_price_level_t( order_price_t p,
+                                                  Nodes_Pool * nodes_pool )
+        : m_price{ p }
+        , m_nodes_pool{ nodes_pool }
+    {
+        assert( nodes_pool );
+    }
+
+    friend inline void swap( intrusive_chunked_soa_price_level_t & lvl1,
+                             intrusive_chunked_soa_price_level_t & lvl2 ) noexcept
+    {
+        using std::swap;
+        swap( lvl1.m_price, lvl2.m_price );
+        swap( lvl1.m_soa_chunks, lvl2.m_soa_chunks );
+        swap( lvl1.m_orders_qty, lvl2.m_orders_qty );
+        swap( lvl1.m_orders_count, lvl2.m_orders_count );
+        swap( lvl1.m_nodes_pool, lvl2.m_nodes_pool );
+    }
+
+    explicit intrusive_chunked_soa_price_level_t(
+        intrusive_chunked_soa_price_level_t && lvl )
+        : m_price{ lvl.m_price }
+        , m_soa_chunks{ std::move( lvl.m_soa_chunks ) }
+        , m_orders_qty{ lvl.m_orders_qty }
+        , m_orders_count{ lvl.m_orders_count }
+        , m_nodes_pool{ lvl.m_nodes_pool }
+    {
+        lvl.m_orders_qty   = order_qty_t{};
+        lvl.m_orders_count = 0;
+    }
+
+    intrusive_chunked_soa_price_level_t & operator=(
+        intrusive_chunked_soa_price_level_t && lvl )
+    {
+        intrusive_chunked_soa_price_level_t tmp{ std::move( lvl ) };
+        swap( *this, tmp );
+
+        return *this;
+    }
+
+    ~intrusive_chunked_soa_price_level_t()
+    {
+        while( !m_soa_chunks.empty() )
+        {
+            auto * node = &m_soa_chunks.front();
+            m_soa_chunks.pop_front();
+            m_nodes_pool->deallocate( node );
+        }
+    }
+
+    using reference_t = intrusive_chunked_soa_price_level_order_reference_t;
+
+    static_assert( Price_Level_Order_Reference_Concept< reference_t > );
+
+    /**
+     * @name Manipulation API.
+     */
+    /// @{
+    /**
+     * @brief Add an order to this price level.
+     */
+    [[nodiscard]] reference_t add_order( order_t order )
+    {
+        assert( order.price == m_price );
+
+        auto it = [ this ]
+        {
+            if( m_soa_chunks.empty() || m_soa_chunks.back().full() )
+            {
+                m_soa_chunks.push_back( *( m_nodes_pool->allocate() ) );
+            }
+
+            auto it = m_soa_chunks.end();
+            return --it;
+        }();
+
+        m_orders_qty += order.qty;
+        ++m_orders_count;
+        return reference_t{ m_price,
+                            &( *it ),
+                            it->push_back( order.id, order.qty ) };
+    }
+
+    /**
+     * @brief Remove an order identified by reference.
+     */
+    void delete_order( const reference_t & ref )
+    {
+        assert( ref.price() == m_price );
+
+        m_orders_qty -= ref.chunk_ptr()->qty[ ref.pos() ];
+        --m_orders_count;
+
+        ref.chunk_ptr()->pop_at( ref.pos() );
+
+        if( ref.chunk_ptr()->empty() )
+        {
+            auto * node = ref.chunk_ptr();
+
+            m_soa_chunks.erase( m_soa_chunks.iterator_to( *node ) );
+            node->links = details::soa_chunk_node_t::init_links;
+            m_nodes_pool->deallocate( node );
+        }
+    }
+
+    /**
+     * @brief Reduce total qty on this level (execute,reduce or modify).
+     */
+    [[nodiscard]] reference_t reduce_qty( const reference_t & ref,
+                                          order_qty_t qty ) noexcept
+    {
+        assert( ref.price() == m_price );
+        assert( m_orders_qty > qty );
+        assert( ref.chunk_ptr()->qty[ ref.pos() ] > qty );
+
+        ref.chunk_ptr()->qty[ ref.pos() ] -= qty;
+        m_orders_qty -= qty;
+
+        return ref;
+    }
+    /// @}
+
+    /**
+     * @name General attributes of the level.
+     */
+    /// @{
+    /**
+     * @brief Get current level price.
+     */
+    [[nodiscard]] order_price_t price() const noexcept { return m_price; }
+
+    /**
+     * @brief Get orders count on a given level.
+     */
+    [[nodiscard]] std::size_t orders_count() const noexcept
+    {
+        return m_orders_count;
+    }
+
+    /**
+     * @brief A total quantity in all orders.
+     */
+    [[nodiscard]] order_qty_t orders_qty() const noexcept { return m_orders_qty; }
+
+    [[nodiscard]] order_t order_at( const reference_t & ref ) const noexcept
+    {
+        return ref.make_order();
+    }
+
+    /**
+     * @brief Is level empty (contains no orders).
+     */
+    [[nodiscard]] bool empty() const noexcept { return 0 == orders_count(); }
+    /// @}
+
+    /**
+     * @brief Get a range of the order on this level.
+     */
+    [[nodiscard]] auto orders_range() const noexcept
+    {
+        return m_soa_chunks
+               | ranges::views::transform( []( const auto & chunk )
+                                           { return chunk.orders_range(); } )
+               | ranges::views::join
+               | ranges::views::transform(
+                   [ p = m_price ]( std::pair< order_id_t, order_qty_t > id_qty )
+                   { return order_t{ id_qty.first, id_qty.second, p }; } );
+    }
+
+    /**
+     * @brief Get a range of the order on this level in reverse.
+     */
+    [[nodiscard]] auto orders_range_reverse() const noexcept
+    {
+        return m_soa_chunks
+               | ranges::views::transform(
+                   []( const auto & chunk )
+                   { return chunk.orders_range_reverse(); } )
+               | ranges::views::join
+               | ranges::views::transform(
+                   [ p = m_price ]( std::pair< order_id_t, order_qty_t > id_qty )
+                   { return order_t{ id_qty.first, id_qty.second, p }; } );
+    }
+
+    /**
+     * @brief Get the first order on this level.
+     *
+     * @pre Level MUST NOT be empty.
+     */
+    [[nodiscard]] order_t first_order() const noexcept
+    {
+        assert( !empty() );
+        const auto & chunk = m_soa_chunks.front();
+        const auto pos = chunk.links[ details::soa_chunk_node_t::head_pos ].next;
+
+        return order_t{ chunk.id[ pos ], chunk.qty[ pos ], m_price };
+    }
+
+private:
+    /**
+     * @brief Current level price.
+     */
+    order_price_t m_price{};
+
+    using soa_chunks_container_t = details::soa_chunk_intrusive_list_t;
+
+    /**
+     * @brief Data container.
+     */
+    soa_chunks_container_t m_soa_chunks{};
+
+    /**
+     * @brief A total quantity in all orders.
+     */
+    order_qty_t m_orders_qty{};
+
+    /**
+     * @brief Number of orders at this level.
+     */
+    std::size_t m_orders_count{};
+
+    /**
+     * @brief Chunk-nodes pool.
+     */
+    Nodes_Pool * m_nodes_pool;
+};
+
+static_assert( Price_Level_Concept<
+               intrusive_chunked_soa_price_level_t< utils::intrusive_nodes_pool_t<
+                   details::soa_chunk_intrusive_node_t,
+                   details::soa_chunk_intrusive_list_member_t > > > );
+
+//
+// intrusive_chunked_soa_price_level_factory_t
+//
+
+template < typename Nodes_Pool >
+class intrusive_chunked_soa_price_level_factory_t
+{
+public:
+    using price_level_t = intrusive_chunked_soa_price_level_t< Nodes_Pool >;
+
+    [[nodiscard]] price_level_t make_price_level( order_price_t p )
+    {
+        return price_level_t{ p, &m_nodes_pool };
+    }
+
+    void retire_price_level( [[maybe_unused]] price_level_t && price_level )
+    {
+        assert( price_level.empty() );
+    }
+
+private:
+    Nodes_Pool m_nodes_pool;
+};
+
+static_assert(
+    Price_Levels_Factory_Concept<
+        intrusive_chunked_soa_price_level_factory_t< utils::intrusive_nodes_pool_t<
+            details::soa_chunk_intrusive_node_t,
+            details::soa_chunk_intrusive_list_member_t > > > );
+
+using std_intrusive_chunked_soa_price_level_factory_t =
+    intrusive_chunked_soa_price_level_factory_t< utils::intrusive_nodes_pool_t<
+        details::soa_chunk_intrusive_node_t,
+        details::soa_chunk_intrusive_list_member_t > >;
 
 }  // namespace jacobi::book

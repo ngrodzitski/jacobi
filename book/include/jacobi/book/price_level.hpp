@@ -8,16 +8,17 @@
 #pragma once
 
 #include <type_traits>
-#include <list>
 #include <map>
+
+#include <boost/intrusive/list.hpp>
 
 #include <range/v3/view/subrange.hpp>
 #include <range/v3/view/reverse.hpp>
-
-#include <plf_list.h>
+#include <range/v3/view/transform.hpp>
 
 #include <jacobi/book/vocabulary_types.hpp>
 #include <jacobi/book/price_level_fwd.hpp>
+#include <jacobi/book/utils/intrusive_nodes_pool.hpp>
 
 namespace jacobi::book
 {
@@ -95,7 +96,7 @@ public:
         assert( order.price == m_price );
 
         m_orders_qty += order.qty;
-        return reference_t{ m_price, m_orders.emplace( m_orders.end(), order ) };
+        return reference_t{ m_orders.emplace( m_orders.end(), order ) };
     }
 
     /**
@@ -350,7 +351,7 @@ public:
             m_begin = it;
         }
 
-        return reference_t{ m_price, it };
+        return reference_t{ it };
     }
 
     /**
@@ -531,5 +532,328 @@ static_assert(
 static_assert(
     Price_Levels_Factory_Concept< shared_list_container_price_levels_factory_t<
         shared_list_container_price_level_t< plf_list_traits_t > > > );
+
+namespace details
+{
+
+//
+// order_intrusive_node_t
+//
+
+struct order_intrusive_node_t
+{
+    order_t order;
+    /**
+     * @brief Intrusive list member hook
+     */
+    boost::intrusive::list_member_hook<> list_hook;
+};
+
+//
+// order_intrusive_list_member_t
+//
+
+/**
+ * @brief Member hook for intrusive list.
+ */
+using order_intrusive_list_member_t =
+    boost::intrusive::member_hook< order_intrusive_node_t,
+                                   boost::intrusive::list_member_hook<>,
+                                   &order_intrusive_node_t::list_hook >;
+
+//
+// orders_intrusive_list_t
+//
+
+using orders_intrusive_list_t =
+    boost::intrusive::list< order_intrusive_node_t,
+                            order_intrusive_list_member_t >;
+
+}  // namespace details
+
+//
+// intrusive_list_price_level_t
+//
+
+/**
+ * @brief A storage of the orders on a given level
+ *        which leverages an intrusive list container with reusable nodes.
+ */
+template < typename Nodes_Pool >
+class intrusive_list_price_level_t
+{
+public:
+    // /**
+    //  * @brief A storage type for the sequence of orders within a level.
+    //  */
+    using orders_container_t = details::orders_intrusive_list_t;
+
+    // /**
+    //  * @brief An iterator type.
+    //  */
+    // using iterator_t = typename orders_container_t::iterator;
+
+    // We don't want copy this object.
+    intrusive_list_price_level_t( const intrusive_list_price_level_t & ) = delete;
+    intrusive_list_price_level_t & operator=(
+        const intrusive_list_price_level_t & ) = delete;
+
+    /**
+     * @brief Init constructor.
+     *
+     * @pre orders must not be `nullptr`.
+     * @post One extra node is added to a shared list container.
+     */
+    explicit intrusive_list_price_level_t( order_price_t p,
+                                           Nodes_Pool * nodes_pool )
+        : m_price{ p }
+        , m_nodes_pool{ nodes_pool }
+    {
+    }
+
+    friend inline void swap( intrusive_list_price_level_t & lvl1,
+                             intrusive_list_price_level_t & lvl2 ) noexcept
+    {
+        using std::swap;
+        swap( lvl1.m_price, lvl2.m_price );
+        swap( lvl1.m_orders, lvl2.m_orders );
+        swap( lvl1.m_orders_qty, lvl2.m_orders_qty );
+        swap( lvl1.m_nodes_pool, lvl2.m_nodes_pool );
+    }
+
+    explicit intrusive_list_price_level_t( intrusive_list_price_level_t && lvl )
+        : m_price{ lvl.m_price }
+        , m_orders{ std::move( lvl.m_orders ) }
+        , m_orders_qty{ lvl.m_orders_qty }
+        , m_nodes_pool{ lvl.m_nodes_pool }
+    {
+    }
+
+    ~intrusive_list_price_level_t()
+    {
+        while( !m_orders.empty() )
+        {
+            auto * node = &m_orders.front();
+            m_orders.pop_front();
+            m_nodes_pool->deallocate( node );
+        }
+    }
+
+    intrusive_list_price_level_t & operator=( intrusive_list_price_level_t && lvl )
+    {
+        // The former instance becomes invalid.
+        intrusive_list_price_level_t tmp{ std::move( lvl ) };
+        assert( !lvl.is_valid() );
+
+        swap( *this, tmp );
+
+        return *this;
+    }
+
+    //
+    // reference_t
+    //
+
+    struct reference_t
+    {
+        details::order_intrusive_node_t * node;
+
+        [[nodiscard]] order_price_t price() const noexcept
+        {
+            return node->order.price;
+        }
+
+        [[nodiscard]] order_t make_order() const noexcept { return node->order; }
+
+        void copy_from( const reference_t & ref ) noexcept { node = ref.node; }
+    };
+
+    static_assert( Price_Level_Order_Reference_Concept< reference_t > );
+
+    /**
+     * @name Manipulation API.
+     */
+    /// @{
+    /**
+     * @brief Add an order to this price level.
+     */
+    [[nodiscard]] reference_t add_order( order_t order )
+    {
+        assert( this->is_valid() );
+        assert( order.price == m_price );
+
+        m_orders_qty += order.qty;
+
+        auto * node = m_nodes_pool->allocate();
+        m_orders.push_back( *node );
+
+        node->order = order;
+
+        return reference_t{ .node = node };
+    }
+
+    /**
+     * @brief Remove an order identified by reference.
+     */
+    void delete_order( const reference_t & ref )
+    {
+        assert( this->is_valid() );
+        assert( ref.price() == m_price );
+
+        auto * node = ref.node;
+        assert( node->order.price == price() );
+        assert( m_orders_qty >= node->order.qty );
+
+        m_orders_qty -= node->order.qty;
+
+        m_orders.erase( m_orders.iterator_to( *node ) );
+        m_nodes_pool->deallocate( node );
+    }
+
+    /**
+     * @brief Reduce total qty on this level (execute,reduce or modify).
+     */
+    [[nodiscard]] reference_t reduce_qty( const reference_t & ref,
+                                          order_qty_t qty ) noexcept
+    {
+        assert( ref.price() == m_price );
+
+        auto * node = ref.node;
+        assert( m_orders_qty > qty );
+        assert( node->order.qty > qty );
+        node->order.qty -= qty;
+        m_orders_qty -= qty;
+        return ref;
+    }
+    /// @}
+
+    /**
+     * @name General attributes of the level.
+     */
+    /// @{
+    /**
+     * @brief Get current level price.
+     */
+    [[nodiscard]] order_price_t price() const noexcept { return m_price; }
+
+    /**
+     * @brief Get orders count on a given level.
+     */
+    [[nodiscard]] std::size_t orders_count() const noexcept
+    {
+        return m_orders.size();
+    }
+
+    /**
+     * @brief A total quantity in all orders.
+     */
+    [[nodiscard]] order_qty_t orders_qty() const noexcept { return m_orders_qty; }
+
+    /**
+     * @brief Get an order at a given position.
+     */
+    [[nodiscard]] order_t order_at( const reference_t & ref )
+    {
+        assert( ref.price() == m_price );
+        return ref.make_order();
+    }
+
+    /**
+     * @brief Is level empty (contains no orders).
+     */
+    [[nodiscard]] bool empty() const noexcept { return m_orders.empty(); }
+    /// @}
+
+    /**
+     * @brief Get a range of the order on this level.
+     */
+    [[nodiscard]] auto orders_range() const noexcept
+    {
+        return ranges::subrange( m_orders.begin(), m_orders.end() )
+               | ranges::views::transform( []( const auto & item )
+                                           { return item.order; } );
+    }
+
+    /**
+     * @brief Get a range of the order on this level in reverse.
+     */
+    [[nodiscard]] auto orders_range_reverse() const noexcept
+    {
+        return orders_range() | ranges::views::reverse;
+    }
+
+    /**
+     * @brief Get the first order on this level.
+     *
+     * @pre Level MUST NOT be empty.
+     */
+    [[nodiscard]] order_t first_order() const noexcept
+    {
+        assert( !empty() );
+        return m_orders.front().order;
+    }
+
+private:
+    /**
+     * @brief Current level price.
+     */
+    order_price_t m_price{};
+
+    /**
+     * @brief Orders container.
+     */
+    orders_container_t m_orders;
+
+    /**
+     * @brief A total quantity in all orders.
+     */
+    order_qty_t m_orders_qty{};
+
+    /**
+     * @brief nodes pool.
+     */
+    Nodes_Pool * m_nodes_pool;
+};
+
+//
+// intrusive_list_price_levels_factory_t
+//
+
+template < typename Nodes_Pool >
+class intrusive_list_price_levels_factory_t
+{
+public:
+    using price_level_t      = intrusive_list_price_level_t< Nodes_Pool >;
+    using orders_container_t = price_level_t::orders_container_t;
+
+    [[nodiscard]] price_level_t make_price_level( order_price_t p )
+    {
+        return price_level_t{ p, &m_nodes_pool };
+    }
+
+    void retire_price_level( [[maybe_unused]] price_level_t && price_level )
+    {
+        assert( price_level.empty() );
+    }
+
+private:
+    Nodes_Pool m_nodes_pool;
+};
+
+static_assert( Price_Level_Concept<
+               intrusive_list_price_level_t< utils::intrusive_nodes_pool_t<
+                   details::order_intrusive_node_t,
+                   details::order_intrusive_list_member_t > > > );
+
+static_assert(
+    Price_Levels_Factory_Concept<
+        intrusive_list_price_levels_factory_t< utils::intrusive_nodes_pool_t<
+            details::order_intrusive_node_t,
+            details::order_intrusive_list_member_t > > > );
+
+using std_intrusive_list_price_levels_factory_t =
+    intrusive_list_price_levels_factory_t<
+        utils::intrusive_nodes_pool_t< details::order_intrusive_node_t,
+                                       details::order_intrusive_list_member_t > >;
 
 }  // namespace jacobi::book

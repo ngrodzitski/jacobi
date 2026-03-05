@@ -125,6 +125,26 @@ jacobi_add_latency_bench( _bench.latency.absl_map_levels_storage
 
 # ===============================================
 # ===============================================
+jacobi_add_throughput_bench( _bench.throughput.intrusive_map_levels_storage.multi_book
+    SOURCES
+    intrusive_map_levels_storage_book_types.hpp
+    throughput/intrusive_map_levels_storage_multi_book.cpp
+)
+# ===============================================
+jacobi_add_throughput_bench( _bench.throughput.intrusive_map_levels_storage.single_book
+    SOURCES
+    intrusive_map_levels_storage_book_types.hpp
+    throughput/intrusive_map_levels_storage_single_book.cpp
+)
+# ===============================================
+jacobi_add_latency_bench( _bench.latency.intrusive_map_levels_storage
+    SOURCES
+    intrusive_map_levels_storage_book_types.hpp
+    latency/intrusive_map_levels_storage_book.cpp
+)
+
+# ===============================================
+# ===============================================
 jacobi_add_throughput_bench( _bench.throughput.linear_v1_levels_storage.multi_book
     SOURCES
     linear_v1_levels_storage_book_types.hpp

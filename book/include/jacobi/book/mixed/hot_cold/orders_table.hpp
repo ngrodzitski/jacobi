@@ -193,6 +193,21 @@ public:
     {
     }
 
+    ~orders_table_t()
+    {
+        for( auto & lvl : m_hot_levels )
+        {
+            this->m_book_private_data.price_levels_factory.retire_price_level(
+                std::move( lvl ) );
+        }
+
+        for( auto & kv : m_cold_levels )
+        {
+            this->m_book_private_data.price_levels_factory.retire_price_level(
+                std::move( kv.second ) );
+        }
+    }
+
     /**
      * @name Hot/Cold orders table specific API.
      */

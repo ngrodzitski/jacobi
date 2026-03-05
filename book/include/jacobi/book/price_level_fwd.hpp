@@ -8,6 +8,9 @@
 #pragma once
 
 #include <type_traits>
+#include <list>
+
+#include <plf_list.h>
 
 #include <jacobi/book/vocabulary_types.hpp>
 
@@ -130,7 +133,7 @@ concept Price_Levels_Factory_Concept = requires( Price_Levels_Factory & factory 
 //
 
 /**
- * @brief Reference agregate to locate the order exactly.
+ * @brief Reference aggregate to locate the order exactly.
  */
 template < typename Iterator >
 class list_based_price_level_order_reference_t
@@ -138,14 +141,15 @@ class list_based_price_level_order_reference_t
 public:
     explicit list_based_price_level_order_reference_t() = default;
 
-    explicit list_based_price_level_order_reference_t( order_price_t p,
-                                                       Iterator it )
-        : m_price{ p }
-        , m_order_it{ it }
+    explicit list_based_price_level_order_reference_t( Iterator it )
+        : m_order_it{ it }
     {
     }
 
-    [[nodiscard]] order_price_t price() const noexcept { return m_price; }
+    [[nodiscard]] order_price_t price() const noexcept
+    {
+        return m_order_it->price;
+    }
 
     [[nodiscard]] order_t make_order() const noexcept { return *m_order_it; }
 
@@ -157,14 +161,12 @@ public:
 
      * @brief Copy reference from another instance.
      */
-    void copy_from( const list_based_price_level_order_reference_t & ref )
+    void copy_from( const list_based_price_level_order_reference_t & ref ) noexcept
     {
-        m_price    = ref.m_price;
         m_order_it = ref.m_order_it;
     }
 
 private:
-    order_price_t m_price;
     Iterator m_order_it;
 };
 

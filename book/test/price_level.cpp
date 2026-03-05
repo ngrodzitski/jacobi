@@ -30,6 +30,7 @@ protected:
 using PriceLevelImplementations = ::testing::Types<
     std_price_levels_factory_t< std_price_level_t< std_list_traits_t > >,
     std_price_levels_factory_t< std_price_level_t< plf_list_traits_t > >,
+    std_intrusive_list_price_levels_factory_t,
 
     shared_list_container_price_levels_factory_t<
         shared_list_container_price_level_t< std_list_traits_t > >,
@@ -53,7 +54,8 @@ using PriceLevelImplementations = ::testing::Types<
     chunked_soa_price_levels_factory_t<
         chunked_soa_price_level_t< std_list_traits_t > >,
     chunked_soa_price_levels_factory_t<
-        chunked_soa_price_level_t< plf_list_traits_t > > >;
+        chunked_soa_price_level_t< plf_list_traits_t > >,
+    std_intrusive_chunked_soa_price_level_factory_t >;
 
 TYPED_TEST_SUITE( JacobiBookPriceLevelTest, PriceLevelImplementations );
 

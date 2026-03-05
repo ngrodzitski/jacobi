@@ -15,6 +15,11 @@
     BENCHMARK_TEMPLATE( func, bsn1_plvl12_refIX3_t )->Name( "bsn1_plvl12_refIX3" );                \
     BENCHMARK_TEMPLATE( func, bsn1_plvl12_refIX4_t )->Name( "bsn1_plvl12_refIX4" );                \
                                                        \
+    BENCHMARK_TEMPLATE( func, bsn1_plvl13_refIX1_t )->Name( "bsn1_plvl13_refIX1" );                \
+    BENCHMARK_TEMPLATE( func, bsn1_plvl13_refIX2_t )->Name( "bsn1_plvl13_refIX2" );                \
+    BENCHMARK_TEMPLATE( func, bsn1_plvl13_refIX3_t )->Name( "bsn1_plvl13_refIX3" );                \
+    BENCHMARK_TEMPLATE( func, bsn1_plvl13_refIX4_t )->Name( "bsn1_plvl13_refIX4" );                \
+                                                       \
     BENCHMARK_TEMPLATE( func, bsn1_plvl21_refIX1_t )->Name( "bsn1_plvl21_refIX1" );                \
     BENCHMARK_TEMPLATE( func, bsn1_plvl21_refIX2_t )->Name( "bsn1_plvl21_refIX2" );                \
     BENCHMARK_TEMPLATE( func, bsn1_plvl21_refIX3_t )->Name( "bsn1_plvl21_refIX3" );                \
@@ -55,6 +60,11 @@
     BENCHMARK_TEMPLATE( func, bsn1_plvl52_refIX3_t )->Name( "bsn1_plvl52_refIX3" );                \
     BENCHMARK_TEMPLATE( func, bsn1_plvl52_refIX4_t )->Name( "bsn1_plvl52_refIX4" );                \
                                                        \
+    BENCHMARK_TEMPLATE( func, bsn1_plvl53_refIX1_t )->Name( "bsn1_plvl53_refIX1" );                \
+    BENCHMARK_TEMPLATE( func, bsn1_plvl53_refIX2_t )->Name( "bsn1_plvl53_refIX2" );                \
+    BENCHMARK_TEMPLATE( func, bsn1_plvl53_refIX3_t )->Name( "bsn1_plvl53_refIX3" );                \
+    BENCHMARK_TEMPLATE( func, bsn1_plvl53_refIX4_t )->Name( "bsn1_plvl53_refIX4" );                \
+                                                       \
     BENCHMARK_TEMPLATE( func, bsn2_plvl11_refIX1_t )->Name( "bsn2_plvl11_refIX1" );                \
     BENCHMARK_TEMPLATE( func, bsn2_plvl11_refIX2_t )->Name( "bsn2_plvl11_refIX2" );                \
     BENCHMARK_TEMPLATE( func, bsn2_plvl11_refIX3_t )->Name( "bsn2_plvl11_refIX3" );                \
@@ -64,6 +74,11 @@
     BENCHMARK_TEMPLATE( func, bsn2_plvl12_refIX2_t )->Name( "bsn2_plvl12_refIX2" );                \
     BENCHMARK_TEMPLATE( func, bsn2_plvl12_refIX3_t )->Name( "bsn2_plvl12_refIX3" );                \
     BENCHMARK_TEMPLATE( func, bsn2_plvl12_refIX4_t )->Name( "bsn2_plvl12_refIX4" );                \
+                                                       \
+    BENCHMARK_TEMPLATE( func, bsn2_plvl13_refIX1_t )->Name( "bsn2_plvl13_refIX1" );                \
+    BENCHMARK_TEMPLATE( func, bsn2_plvl13_refIX2_t )->Name( "bsn2_plvl13_refIX2" );                \
+    BENCHMARK_TEMPLATE( func, bsn2_plvl13_refIX3_t )->Name( "bsn2_plvl13_refIX3" );                \
+    BENCHMARK_TEMPLATE( func, bsn2_plvl13_refIX4_t )->Name( "bsn2_plvl13_refIX4" );                \
                                                        \
     BENCHMARK_TEMPLATE( func, bsn2_plvl21_refIX1_t )->Name( "bsn2_plvl21_refIX1" );                \
     BENCHMARK_TEMPLATE( func, bsn2_plvl21_refIX2_t )->Name( "bsn2_plvl21_refIX2" );                \
@@ -103,6 +118,11 @@
     BENCHMARK_TEMPLATE( func, bsn2_plvl52_refIX1_t )->Name( "bsn2_plvl52_refIX1" );                \
     BENCHMARK_TEMPLATE( func, bsn2_plvl52_refIX2_t )->Name( "bsn2_plvl52_refIX2" );                \
     BENCHMARK_TEMPLATE( func, bsn2_plvl52_refIX3_t )->Name( "bsn2_plvl52_refIX3" );                \
-    BENCHMARK_TEMPLATE( func, bsn2_plvl52_refIX4_t )->Name( "bsn2_plvl52_refIX4" );
+    BENCHMARK_TEMPLATE( func, bsn2_plvl52_refIX4_t )->Name( "bsn2_plvl52_refIX4" );                \
+                                                       \
+    BENCHMARK_TEMPLATE( func, bsn2_plvl53_refIX1_t )->Name( "bsn2_plvl53_refIX1" );                \
+    BENCHMARK_TEMPLATE( func, bsn2_plvl53_refIX2_t )->Name( "bsn2_plvl53_refIX2" );                \
+    BENCHMARK_TEMPLATE( func, bsn2_plvl53_refIX3_t )->Name( "bsn2_plvl53_refIX3" );                \
+    BENCHMARK_TEMPLATE( func, bsn2_plvl53_refIX4_t )->Name( "bsn2_plvl53_refIX4" );
 
 // clang-format on
