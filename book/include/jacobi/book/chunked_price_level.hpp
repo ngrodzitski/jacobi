@@ -117,7 +117,7 @@ public:
         assert( order.price == m_price );
 
         m_orders_qty += order.qty;
-        return reference_t{ m_price, m_orders.push_back( order ) };
+        return reference_t{ m_orders.push_back( order ) };
     }
 
     /**

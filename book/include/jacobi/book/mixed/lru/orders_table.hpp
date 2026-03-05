@@ -320,6 +320,15 @@ public:
     {
     }
 
+    ~orders_table_t()
+    {
+        for( auto & kv : m_price_levels )
+        {
+            this->m_book_private_data.price_levels_factory.retire_price_level(
+                std::move( kv.second ) );
+        }
+    }
+
     // Reuse base constructors.
     using base_type_t::base_type_t;
 

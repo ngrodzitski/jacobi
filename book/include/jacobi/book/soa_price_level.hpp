@@ -129,7 +129,7 @@ public:
     /**
      * @brief Copy reference from another instance.
      */
-    void copy_from( const soa_price_level_order_reference_t & ref )
+    void copy_from( const soa_price_level_order_reference_t & ref ) noexcept
     {
         m_order = ref.m_order;
         m_pos   = ref.m_pos;

@@ -72,6 +72,15 @@ public:
     // Reuse base constructors.
     using base_type_t::base_type_t;
 
+    ~orders_table_t()
+    {
+        for( auto & lvl : m_price_levels )
+        {
+            this->m_book_private_data.price_levels_factory.retire_price_level(
+                std::move( lvl ) );
+        }
+    }
+
     [[nodiscard]] bool empty() const noexcept { return m_price_levels.empty(); }
 
     /**
@@ -359,6 +368,15 @@ public:
 
     // Reuse base constructors.
     using base_type_t::base_type_t;
+
+    ~orders_table_t()
+    {
+        for( auto & lvl : m_price_levels )
+        {
+            this->m_book_private_data.price_levels_factory.retire_price_level(
+                std::move( lvl ) );
+        }
+    }
 
     [[nodiscard]] bool empty() const noexcept
     {
@@ -679,6 +697,15 @@ public:
 
     // Reuse base constructors.
     using base_type_t::base_type_t;
+
+    ~orders_table_t()
+    {
+        for( auto & lvl : m_price_levels )
+        {
+            this->m_book_private_data.price_levels_factory.retire_price_level(
+                std::move( lvl ) );
+        }
+    }
 
     [[nodiscard]] bool empty() const noexcept { return m_price_levels.empty(); }
 

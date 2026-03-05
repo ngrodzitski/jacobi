@@ -64,6 +64,15 @@ public:
     // Reuse base constructors.
     using base_type_t::base_type_t;
 
+    ~generic_orders_table_t()
+    {
+        for( auto & kv : m_price_levels )
+        {
+            this->m_book_private_data.price_levels_factory.retire_price_level(
+                std::move( kv.second ) );
+        }
+    }
+
     [[nodiscard]] bool empty() const noexcept { return m_price_levels.empty(); }
 
     /**

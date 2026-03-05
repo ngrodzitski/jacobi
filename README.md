@@ -72,8 +72,12 @@ conan install -pr:a ./conan_profiles/ubu-gcc-11-x86-64-v3 -s:a build_type=Releas
 cmake --build _build_release -j 6
 
 # UB and Address sanitizer build
-conan install -pr:a ./conan_profiles/ubu-gcc-11-ubasan --build missing -of _build_ubasan .
+conan install -pr:h ./conan_profiles/ubu-gcc-11-ubasan -pr:b ./conan_profiles/ubu-gcc-11 --build missing -of _build_ubasan .
 ( source ./_build_ubasan/conanbuild.sh && cmake -B_build_ubasan . -DCMAKE_TOOLCHAIN_FILE=_build_ubasan/conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Debug -DJACOBI_BUILD_BENCHMARKS=OFF)
+cmake --build _build_ubasan -j 6
+
+conan install -pr:h ./conan_profiles/ubu-gcc-11-ubasan -pr:b ./conan_profiles/ubu-gcc-11 --build missing -o ntvitch=True -of _build_ubasan .
+( source ./_build_ubasan/conanbuild.sh && cmake -B_build_ubasan . -DCMAKE_TOOLCHAIN_FILE=_build_ubasan/conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Debug -DJACOBI_BUILD_BENCHMARKS=OFF -DJACOBI_NTVITCH_CONVERTER=ON)
 cmake --build _build_ubasan -j 6
 
 
