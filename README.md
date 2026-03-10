@@ -13,6 +13,7 @@
    * [Orders Table](#orders-table)
       * [Implementation: CRTP](#implementation-crtp)
       * [Ordered Map Storage](#ordered-map-storage)
+      * [Intrusive Ordered Map Storage](#intrusive-ordered-map-storage)
       * [Linear Storage](#linear-storage)
       * [Mixed Storage: LRU](#mixed-storage-lru)
       * [Mixed Storage: Hot Cold](#mixed-storage-hot-cold)
@@ -329,7 +330,7 @@ The choice of Price Level data structure is a critical benchmark parameter.
 **JACOBI** provides five distinct implementations to explore
 the trade-offs between memory overhead, cache locality, and update complexity.
 
-1. Simple List Price Level (Baseline).
+1. **List** Price Level (Baseline).
 
    One linked list per price level. Each node holds exactly one order.
    Implementation: `std_price_level_t<List_Traits>` ([jacobi/book/price_level.hpp](./book/include/jacobi/book/price_level.hpp)).
@@ -337,6 +338,14 @@ the trade-offs between memory overhead, cache locality, and update complexity.
     Containers:
     - `std::list` (benchmark code: **plvl11**)
     - `plf::list` (benchmark code: **plvl12**).
+
+   **Intrusive List** (since 2026-03-10).
+
+   One intrusive linked list per price level that uses reusable nodes pool.
+   Implementation: `boost::intrusive::list<...>` ([jacobi/book/price_level.hpp](./book/include/jacobi/book/price_level.hpp)).
+
+    Containers:
+    - `std::list` (benchmark code: **plvl13**).
 
 2. Shared List Price Level.
 
@@ -403,6 +412,7 @@ the trade-offs between memory overhead, cache locality, and update complexity.
    Underlying node container:
     - `std::list` (benchmark code: **plvl51**)
     - `plf::list` (benchmark code: **plvl52**).
+    - `boost::intrusive::list` (benchmark code: **plvl53**).
 
 ## Orders Table
 
@@ -488,6 +498,13 @@ See implementation here: [jacobi/book/map/orders_table.hpp](./book/include/jacob
 **JACOBI** benchmarks 2 implementations:
   * `std::map<K, V>` (map);
   * `absl:btree_map<K, V>` (absl_map).
+
+### Intrusive Ordered Map Storage
+
+Technically the same as "Ordered Map Storage" but uses intrusive nodes
+supplied by a pool of reusable nodes.
+
+**JACOBI** implements it with `boost::intrusive::set` (intrusive_map).
 
 ### Linear Storage
 
