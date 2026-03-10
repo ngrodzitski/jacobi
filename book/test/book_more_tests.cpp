@@ -521,7 +521,6 @@ TYPED_TEST( JacobiBookBuildingTests, IssueN0004 )
 
     for( auto i = 0ULL; i < events.size() - 1; ++i )
     {
-        // fmt::print( "i={}\n", i);
         handle_single_event( this->book, events[ i ] );
     }
 
@@ -530,6 +529,87 @@ TYPED_TEST( JacobiBookBuildingTests, IssueN0004 )
     handle_single_event( this->book, events.back() );
 
     print_book( "After last event", this->book );
+}
+
+// NOLINTNEXTLINE
+TYPED_TEST( JacobiBookBuildingTests, AskBBO )
+{
+    this->book.template add_order< trade_side::sell >(
+        order_t{ order_id_t{ 0x238427E074D5989ull },
+                 order_qty_t{ 200 },
+                 order_price_t{ 314 } } );
+    this->book.template add_order< trade_side::buy >(
+        order_t{ order_id_t{ 0x238427E074D598Eull },
+                 order_qty_t{ 200 },
+                 order_price_t{ 309 } } );
+
+    const auto bbo = this->book.bbo();
+
+    ASSERT_TRUE( static_cast< bool >( bbo.bid ) );
+    ASSERT_TRUE( static_cast< bool >( bbo.offer ) );
+
+    EXPECT_EQ( type_safe::get( bbo.offer.value() ), 314 );
+    EXPECT_EQ( type_safe::get( bbo.bid.value() ), 309 );
+}
+
+// NOLINTNEXTLINE
+TYPED_TEST( JacobiBookBuildingTests, AskTopPriceQty )
+{
+    this->book.template add_order< trade_side::sell >(
+        order_t{ order_id_t{ 1 }, order_qty_t{ 200 }, order_price_t{ 314 } } );
+    this->book.template add_order< trade_side::sell >(
+        order_t{ order_id_t{ 2 }, order_qty_t{ 20 }, order_price_t{ 314 } } );
+    this->book.template add_order< trade_side::sell >(
+        order_t{ order_id_t{ 3 }, order_qty_t{ 2 }, order_price_t{ 314 } } );
+
+    this->book.template add_order< trade_side::buy >(
+        order_t{ order_id_t{ 7 }, order_qty_t{ 1 }, order_price_t{ 309 } } );
+    this->book.template add_order< trade_side::buy >(
+        order_t{ order_id_t{ 8 }, order_qty_t{ 100 }, order_price_t{ 309 } } );
+    this->book.template add_order< trade_side::buy >(
+        order_t{ order_id_t{ 9 }, order_qty_t{ 10 }, order_price_t{ 309 } } );
+
+    const auto qs = this->book.sell().top_price_qty();
+    const auto qb = this->book.buy().top_price_qty();
+
+    ASSERT_TRUE( static_cast< bool >( qs ) );
+    ASSERT_TRUE( static_cast< bool >( qb ) );
+
+    EXPECT_EQ( qs.value(), order_qty_t{ 222 } );
+    EXPECT_EQ( qb.value(), order_qty_t{ 111 } );
+}
+
+// NOLINTNEXTLINE
+TYPED_TEST( JacobiBookBuildingTests, AskFirstOrder )
+{
+    const order_t first_sell_order{ order_id_t{ 1 },
+                                    order_qty_t{ 200 },
+                                    order_price_t{ 314 } };
+    this->book.template add_order< trade_side::sell >( first_sell_order );
+    this->book.template add_order< trade_side::sell >(
+        order_t{ order_id_t{ 2 }, order_qty_t{ 20 }, order_price_t{ 314 } } );
+    this->book.template add_order< trade_side::sell >(
+        order_t{ order_id_t{ 3 }, order_qty_t{ 2 }, order_price_t{ 314 } } );
+
+    const order_t first_buy_order{ order_id_t{ 7 },
+                                   order_qty_t{ 1 },
+                                   order_price_t{ 309 } };
+    this->book.template add_order< trade_side::buy >( first_buy_order );
+    this->book.template add_order< trade_side::buy >(
+        order_t{ order_id_t{ 8 }, order_qty_t{ 100 }, order_price_t{ 309 } } );
+    this->book.template add_order< trade_side::buy >(
+        order_t{ order_id_t{ 9 }, order_qty_t{ 10 }, order_price_t{ 309 } } );
+
+    const auto s = this->book.sell().first_order();
+    const auto b = this->book.buy().first_order();
+
+    EXPECT_EQ( s.id, first_sell_order.id );
+    EXPECT_EQ( s.price, first_sell_order.price );
+    EXPECT_EQ( s.qty, first_sell_order.qty );
+
+    EXPECT_EQ( b.id, first_buy_order.id );
+    EXPECT_EQ( b.price, first_buy_order.price );
+    EXPECT_EQ( b.qty, first_buy_order.qty );
 }
 
 }  // anonymous namespace

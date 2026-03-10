@@ -13,7 +13,7 @@
 #include <type_traits>
 
 #include <boost/intrusive/set.hpp>
-#include <boost/intrusive/any_hook.hpp>  // Required for any_hook
+#include <boost/intrusive/any_hook.hpp>
 
 #include <range/v3/view/map.hpp>
 #include <range/v3/view/transform.hpp>
@@ -93,13 +93,13 @@ struct price_level_node_t
      */
     void deinit()
     {
+        Price_Level * ptr = plvl();
+        ptr->~Price_Level();
+
 #if !defined( NDEBUG )
         assert( is_active );
         is_active = false;
 #endif  // if !defined(NDEBUG)
-
-        Price_Level * ptr = plvl();
-        ptr->~Price_Level();
     }
 
     [[nodiscard]] Price_Level * plvl() noexcept
@@ -119,7 +119,7 @@ struct price_level_node_t
 
 private:
     /**
-     * @nbrief Raw memory storage for price level object.
+     * @brief Raw memory storage for price level object.
      */
     alignas( Price_Level ) std::array< std::byte, sizeof( Price_Level ) > payload;
 
@@ -227,7 +227,7 @@ public:
         {
             return std::nullopt;
         }
-        return m_price_levels.begin()->plvl.price();
+        return m_price_levels.begin()->plvl()->price();
     }
     /**
      * @brief Get top price quantity.
@@ -238,7 +238,7 @@ public:
         {
             return std::nullopt;
         }
-        return m_price_levels.begin()->plvl.orders_qty();
+        return m_price_levels.begin()->plvl()->orders_qty();
     }
 
     /**
@@ -261,7 +261,7 @@ public:
     [[nodiscard]] order_t first_order() const noexcept
     {
         assert( !empty() );
-        return m_price_levels.begin()->plvl.first_order();
+        return m_price_levels.begin()->plvl()->first_order();
     }
 
 private:

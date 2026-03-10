@@ -643,7 +643,6 @@ public:
     {
         // The former instance becomes invalid.
         intrusive_list_price_level_t tmp{ std::move( lvl ) };
-        assert( !lvl.is_valid() );
 
         swap( *this, tmp );
 
@@ -679,7 +678,6 @@ public:
      */
     [[nodiscard]] reference_t add_order( order_t order )
     {
-        assert( this->is_valid() );
         assert( order.price == m_price );
 
         m_orders_qty += order.qty;
@@ -697,7 +695,6 @@ public:
      */
     void delete_order( const reference_t & ref )
     {
-        assert( this->is_valid() );
         assert( ref.price() == m_price );
 
         auto * node = ref.node;

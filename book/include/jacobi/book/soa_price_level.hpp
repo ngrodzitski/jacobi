@@ -375,8 +375,10 @@ public:
     {
         assert( !empty() );
         const auto i = m_links_storage[ nodes_anchor_pos.node_link_index() ].next;
-        assert( i >= position_t::usable_nodes_offset.node_link_index() );
-        return order_t{ m_ids[ i ], m_qtys[ i ], m_price };
+        assert( i.data_index() >= position_t::usable_nodes_offset );
+        return order_t{ m_ids[ i.data_index() ],
+                        m_qtys[ i.data_index() ],
+                        m_price };
     }
 
 private:

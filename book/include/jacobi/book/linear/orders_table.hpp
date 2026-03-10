@@ -270,15 +270,23 @@ private:
     }
 
     /**
-     * @brief Get top price level.
+     * @name Get top price level.
      *
      * @pre Table must not be empty.
      */
+    /// @{
     [[nodiscard]] price_level_t & top_level() noexcept
     {
         assert( !this->empty() );
         return m_price_levels.back();
     }
+
+    [[nodiscard]] const price_level_t & top_level() const noexcept
+    {
+        assert( !this->empty() );
+        return m_price_levels.back();
+    }
+    /// @}
 
     /**
      * @brief Handle a price level becoming empty
@@ -585,15 +593,23 @@ private:
     }
 
     /**
-     * @brief Get top price level.
+     * @name Get top price level.
      *
      * @pre Table must not be empty.
      */
+    /// @{
     [[nodiscard]] price_level_t & top_level() noexcept
     {
         assert( !this->empty() );
         return m_price_levels[ make_storage_index( m_top_price ) ];
     }
+
+    [[nodiscard]] const price_level_t & top_level() const noexcept
+    {
+        assert( !this->empty() );
+        return m_price_levels[ make_storage_index( m_top_price ) ];
+    }
+    /// @}
 
     /**
      * @brief Handle a price level becoming empty.
@@ -822,15 +838,23 @@ private:
     }
 
     /**
-     * @brief Get top price level.
+     * @name Get top price level.
      *
      * @pre Table must not be empty.
      */
+    /// @{
     [[nodiscard]] price_level_t & top_level() noexcept
     {
         assert( !this->empty() );
         return m_price_levels.back();
     }
+
+    [[nodiscard]] const price_level_t & top_level() const noexcept
+    {
+        assert( !this->empty() );
+        return m_price_levels.back();
+    }
+    /// @}
 
     /**
      * @brief Handle a price level becoming empty.

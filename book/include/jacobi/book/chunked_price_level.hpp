@@ -211,7 +211,7 @@ public:
     [[nodiscard]] order_t first_order() const noexcept
     {
         assert( !empty() );
-        return m_orders.front();
+        return *( m_orders.begin() );
     }
 
 private:

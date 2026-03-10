@@ -124,7 +124,7 @@ TEST( JacobiBookIntrusiveNodesPool, DeallocatedNodeCanBeReused )
 {
     test_pool_t< 4 > pool{ 1 };
 
-    auto * n1 = pool.allocate();
+    auto * n1                  = pool.allocate();
     [[maybe_unused]] auto * n2 = pool.allocate();
     [[maybe_unused]] auto * n3 = pool.allocate();
     [[maybe_unused]] auto * n4 = pool.allocate();
