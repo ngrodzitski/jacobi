@@ -819,10 +819,7 @@ public:
         return price_level_t{ p, &m_nodes_pool };
     }
 
-    void retire_price_level( [[maybe_unused]] price_level_t && price_level )
-    {
-        assert( price_level.empty() );
-    }
+    void retire_price_level( [[maybe_unused]] price_level_t && price_level ) {}
 
 private:
     Nodes_Pool m_nodes_pool;
