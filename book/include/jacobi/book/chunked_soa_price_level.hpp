@@ -454,8 +454,6 @@ private:
 
 static_assert(
     Price_Level_Concept< chunked_soa_price_level_t< std_list_traits_t > > );
-static_assert(
-    Price_Level_Concept< chunked_soa_price_level_t< plf_list_traits_t > > );
 
 //
 // chunked_soa_price_levels_factory_t
@@ -467,8 +465,6 @@ using chunked_soa_price_levels_factory_t =
 
 static_assert( Price_Levels_Factory_Concept< chunked_soa_price_levels_factory_t<
                    chunked_soa_price_level_t< std_list_traits_t > > > );
-static_assert( Price_Levels_Factory_Concept< chunked_soa_price_levels_factory_t<
-                   chunked_soa_price_level_t< plf_list_traits_t > > > );
 
 namespace details
 {

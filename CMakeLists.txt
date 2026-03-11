@@ -49,12 +49,6 @@ find_package(tsl-robin-map REQUIRED)
 find_package(type_safe REQUIRED)
 find_package(absl REQUIRED)
 
-# Use adhusted plf_list with trivially-copyable iterators.
-# https://github.com/mattreecebentley/plf_list/pull/35
-add_subdirectory(custom_deps/plf_list)
-# instead of
-# find_package(plf_list REQUIRED)
-
 # ====================================================================
 # Version
 # ====================================================================

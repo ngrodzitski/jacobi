@@ -10,8 +10,6 @@
 #include <type_traits>
 #include <list>
 
-#include <plf_list.h>
-
 #include <jacobi/book/vocabulary_types.hpp>
 
 namespace jacobi::book
@@ -36,16 +34,6 @@ struct std_list_traits_t
 {
     template < typename T >
     using list_t = std::list< T >;
-};
-
-//
-// plf_list_traits_t
-//
-
-struct plf_list_traits_t
-{
-    template < typename T >
-    using list_t = plf::list< T >;
 };
 
 //

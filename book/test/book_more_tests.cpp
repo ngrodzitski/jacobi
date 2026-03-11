@@ -8,16 +8,12 @@
 
 #include <cstdlib>
 
-#if defined( JACOBI_BOOK_TEST_PLVL11 ) || defined( JACOBI_BOOK_TEST_PLVL12 )    \
-    || defined( JACOBI_BOOK_TEST_PLVL13 ) || defined( JACOBI_BOOK_TEST_PLVL21 ) \
-    || defined( JACOBI_BOOK_TEST_PLVL22 )
+#if defined( JACOBI_BOOK_TEST_PLVL11 ) || defined( JACOBI_BOOK_TEST_PLVL13 ) \
+    || defined( JACOBI_BOOK_TEST_PLVL21 )
 #    include <jacobi/book/price_level.hpp>
 #elif defined( JACOBI_BOOK_TEST_PLVL30 ) || defined( JACOBI_BOOK_TEST_PLVL31 )
 #    include <jacobi/book/soa_price_level.hpp>
-#elif defined( JACOBI_BOOK_TEST_PLVL41 ) || defined( JACOBI_BOOK_TEST_PLVL42 )
-#    include <jacobi/book/chunked_price_level.hpp>
-#elif defined( JACOBI_BOOK_TEST_PLVL51 ) || defined( JACOBI_BOOK_TEST_PLVL52 ) \
-    || defined( JACOBI_BOOK_TEST_PLVL53 )
+#elif defined( JACOBI_BOOK_TEST_PLVL51 ) || defined( JACOBI_BOOK_TEST_PLVL53 )
 #    include <jacobi/book/chunked_soa_price_level.hpp>
 #else
 #    error "JACOBI_BOOK_TEST_PLVL?? must be defined"
@@ -135,35 +131,20 @@ protected:
 #if defined( JACOBI_BOOK_TEST_PLVL11 )
 using price_level_factory_type_t =
     std_price_levels_factory_t< std_price_level_t< std_list_traits_t > >;
-#elif defined( JACOBI_BOOK_TEST_PLVL12 )
-using price_level_factory_type_t =
-    std_price_levels_factory_t< std_price_level_t< plf_list_traits_t > >;
 #elif defined( JACOBI_BOOK_TEST_PLVL13 )
 using price_level_factory_type_t = std_intrusive_list_price_levels_factory_t;
 #elif defined( JACOBI_BOOK_TEST_PLVL21 )
 using price_level_factory_type_t = shared_list_container_price_levels_factory_t<
     shared_list_container_price_level_t< std_list_traits_t > >;
-#elif defined( JACOBI_BOOK_TEST_PLVL22 )
-using price_level_factory_type_t = shared_list_container_price_levels_factory_t<
-    shared_list_container_price_level_t< plf_list_traits_t > >;
 #elif defined( JACOBI_BOOK_TEST_PLVL30 )
 using price_level_factory_type_t = soa_price_levels_factory_t<
     soa_price_level_t< std_vector_soa_price_level_traits_t > >;
 #elif defined( JACOBI_BOOK_TEST_PLVL31 )
 using price_level_factory_type_t = soa_price_levels_factory_t<
     soa_price_level_t< boost_smallvec_soa_price_level_traits_t< 16 > > >;
-#elif defined( JACOBI_BOOK_TEST_PLVL41 )
-using price_level_factory_type_t = chunked_price_levels_factory_t<
-    chunked_price_level_t< std_chunk_list_traits_t > >;
-#elif defined( JACOBI_BOOK_TEST_PLVL42 )
-using price_level_factory_type_t = chunked_price_levels_factory_t<
-    chunked_price_level_t< plf_chunk_list_traits_t > >;
 #elif defined( JACOBI_BOOK_TEST_PLVL51 )
 using price_level_factory_type_t = chunked_soa_price_levels_factory_t<
     chunked_soa_price_level_t< std_list_traits_t > >;
-#elif defined( JACOBI_BOOK_TEST_PLVL52 )
-using price_level_factory_type_t = chunked_soa_price_levels_factory_t<
-    chunked_soa_price_level_t< plf_list_traits_t > >;
 #elif defined( JACOBI_BOOK_TEST_PLVL53 )
 using price_level_factory_type_t = std_intrusive_chunked_soa_price_level_factory_t;
 #else
@@ -203,20 +184,23 @@ using JacobiBookBuildingTestsTypes = ::testing::Types<
 //     1. PLEVEL_FACTORY + PLEVEL:
 //        I.   std_price_levels_factory_t + std_price_level_t
 //              A. std_list_traits_t
-//              B. plf_list_traits_t
+//              //// B. plf_list_traits_t (OBSOLETE: not performing)
 //        II.  shared_list_container_price_levels_factory_t
 //               + shared_list_container_price_level_t
 //              A. std_list_traits_t
-//              B. plf_list_traits_t
+//              //// B. plf_list_traits_t (OBSOLETE: not performing)
 //        III. soa_price_levels_factory_t +
 //              A. soa_price_level_t< std_vector_soa_price_level_traits_t >
 //              B. boost_smallvec_soa_price_level_traits_t< 16 >
-//        IV.  chunked_price_levels_factory_t + chunked_price_level_t
-//              A. std_list_traits_t
-//              B. plf_list_traits_t
+//
+//        //// OBSOLETE: not performing design/implementation:
+//        //// IV.  chunked_price_levels_factory_t + chunked_price_level_t
+//        ////       A. std_list_traits_t
+//        ////       B. plf_list_traits_t
+//
 //        V.   chunked_soa_price_levels_factory_t + chunked_soa_price_level_t
 //              A. std_list_traits_t
-//              B. plf_list_traits_t
+//              //// B. plf_list_traits_t (OBSOLETE: not performing)
 //              C. intrusive list + nodes pool
 //
 //     2. ORDERS_REF_ONDEX:

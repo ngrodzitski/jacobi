@@ -219,14 +219,10 @@ template < typename Price_Level >
 using std_price_levels_factory_t = trivial_price_levels_factory_t< Price_Level >;
 
 static_assert( Price_Level_Concept< std_price_level_t< std_list_traits_t > > );
-static_assert( Price_Level_Concept< std_price_level_t< plf_list_traits_t > > );
 
 static_assert(
     Price_Levels_Factory_Concept<
         std_price_levels_factory_t< std_price_level_t< std_list_traits_t > > > );
-static_assert(
-    Price_Levels_Factory_Concept<
-        std_price_levels_factory_t< std_price_level_t< plf_list_traits_t > > > );
 
 //
 // shared_list_container_price_level_t
@@ -523,15 +519,10 @@ private:
 
 static_assert( Price_Level_Concept<
                shared_list_container_price_level_t< std_list_traits_t > > );
-static_assert( Price_Level_Concept<
-               shared_list_container_price_level_t< plf_list_traits_t > > );
 
 static_assert(
     Price_Levels_Factory_Concept< shared_list_container_price_levels_factory_t<
         shared_list_container_price_level_t< std_list_traits_t > > > );
-static_assert(
-    Price_Levels_Factory_Concept< shared_list_container_price_levels_factory_t<
-        shared_list_container_price_level_t< plf_list_traits_t > > > );
 
 namespace details
 {

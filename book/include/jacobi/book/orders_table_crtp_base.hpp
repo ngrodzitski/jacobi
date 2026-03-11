@@ -9,10 +9,6 @@
 #pragma once
 
 #include <type_traits>
-#include <list>
-#include <map>
-
-#include <plf_list.h>
 
 #include <jacobi/book/vocabulary_types.hpp>
 #include <jacobi/book/price_level_fwd.hpp>

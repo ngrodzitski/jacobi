@@ -1,6 +1,5 @@
 #include <jacobi/book/price_level.hpp>
 #include <jacobi/book/soa_price_level.hpp>
-#include <jacobi/book/chunked_price_level.hpp>
 #include <jacobi/book/chunked_soa_price_level.hpp>
 
 #include <algorithm>
@@ -29,13 +28,10 @@ protected:
 
 using PriceLevelImplementations = ::testing::Types<
     std_price_levels_factory_t< std_price_level_t< std_list_traits_t > >,
-    std_price_levels_factory_t< std_price_level_t< plf_list_traits_t > >,
     std_intrusive_list_price_levels_factory_t,
 
     shared_list_container_price_levels_factory_t<
         shared_list_container_price_level_t< std_list_traits_t > >,
-    shared_list_container_price_levels_factory_t<
-        shared_list_container_price_level_t< plf_list_traits_t > >,
 
     soa_price_levels_factory_t<
         soa_price_level_t< std_vector_soa_price_level_traits_t > >,
@@ -46,15 +42,8 @@ using PriceLevelImplementations = ::testing::Types<
     soa_price_levels_factory_t<
         soa_price_level_t< boost_smallvec_soa_price_level_traits_t< 32 > > >,
 
-    chunked_price_levels_factory_t<
-        chunked_price_level_t< std_chunk_list_traits_t > >,
-    chunked_price_levels_factory_t<
-        chunked_price_level_t< plf_chunk_list_traits_t > >,
-
     chunked_soa_price_levels_factory_t<
         chunked_soa_price_level_t< std_list_traits_t > >,
-    chunked_soa_price_levels_factory_t<
-        chunked_soa_price_level_t< plf_list_traits_t > >,
     std_intrusive_chunked_soa_price_level_factory_t >;
 
 TYPED_TEST_SUITE( JacobiBookPriceLevelTest, PriceLevelImplementations );
@@ -63,7 +52,7 @@ TYPED_TEST_SUITE( JacobiBookPriceLevelTest, PriceLevelImplementations );
 TYPED_TEST( JacobiBookPriceLevelTest, PriceLevel )
 {
     // Adds 3 orders to price levels.
-    // tests move-constructor/assignment nd swap
+    // tests move-constructor/assignment and swap
     // removes orders.
 
     auto plvl =

@@ -8,7 +8,6 @@ list(APPEND  unittests_srcfiles
     order_refs_index.cpp
     book.cpp
 
-    utils/chunk_list.cpp
     utils/intrusive_nodes_pool.cpp
 
     map/orders_table.cpp
@@ -37,11 +36,10 @@ gtest_discover_tests(${test_prj} TEST_PREFIX "${JACOBI_TEST_PREFIX}")
 
 set(levels_storage_variants "MAP" "LINEAR" "MIXED")
 set(price_levels_variants
-    "PLVL11" "PLVL12" "PLVL13"
-    "PLVL21" "PLVL22"
+    "PLVL11" "PLVL13"
+    "PLVL21"
     "PLVL30" "PLVL31"
-    "PLVL41" "PLVL42"
-    "PLVL51" "PLVL52" "PLVL53"
+    "PLVL51" "PLVL53"
 )
 set(reference_index_variants  "REFIX1" "REFIX2" "REFIX3" "REFIX4" )
 

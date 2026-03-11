@@ -12,11 +12,10 @@ project(${TARGET_PROJECT} LANGUAGES CXX VERSION ${JACOBI_VERSION})
 # ====================================================================
 
 list(APPEND TARGET_PUBLIC_HEADERS
-    include/jacobi/book/utils/chunk_list.hpp
     include/jacobi/book/utils/lemire_hash.hpp
+    include/jacobi/book/utils/intrusive_nodes_pool.hpp
 
     include/jacobi/book/book.hpp
-    include/jacobi/book/chunked_price_level.hpp
     include/jacobi/book/chunked_soa_price_level.hpp
     include/jacobi/book/order_refs_index.hpp
     include/jacobi/book/orders_table_crtp_base.hpp
@@ -52,7 +51,6 @@ target_link_libraries(${TARGET_PROJECT}
                       INTERFACE
                       fmt::fmt
                       type_safe::type_safe
-                      plf_list::plf_list
                       tsl::robin_map
                       Boost::headers
                       range-v3::range-v3
