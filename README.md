@@ -1,9 +1,9 @@
 # JACOBI project (JACOBI - Just Another Collection of Order Book Implementations)
 
-* [JACOBI project (JACOBI - Just Another Collection of Order Book Implementations)](#jacobi-project-jacobi---just-another-collection-of-order-book-implementations)
 * [Updates](#updates)
-   * [Technical details](#technical-details)
-      * [Build instructions](#build-instructions)
+* [Technical details](#technical-details)
+   * [Prerequisites](#prerequisites)
+   * [Build instructions](#build-instructions)
 * [Order Book Implementation Details](#order-book-implementation-details)
    * [Core Abstractions](#core-abstractions)
    * [Vocabulary types](#vocabulary-types)
@@ -62,16 +62,17 @@ Once built, you can run the suite against your datasets on your hardware:
   So their further support is abandoned.
   Price level implementations retired: `plvl41, plvl42`.
 
-## Technical details
+# Technical details
 
-Prerequisites:
+## Prerequisites
+
   * C++20 compiler (the oldest version tested is g++-11).
   * CMake.
   * [Conan package manager](https://conan.io/) or alternatively you
     provide an environment that will make all CMake `find(XXX)`
     in the root cmake-file work.
 
-### Build instructions
+## Build instructions
 
 Here are sample build instruction you can use as a starting point:
 
