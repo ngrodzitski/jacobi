@@ -1,6 +1,7 @@
 # JACOBI project (JACOBI - Just Another Collection of Order Book Implementations)
 
 * [JACOBI project (JACOBI - Just Another Collection of Order Book Implementations)](#jacobi-project-jacobi---just-another-collection-of-order-book-implementations)
+* [Updates](#updates)
    * [Technical details](#technical-details)
       * [Build instructions](#build-instructions)
 * [Order Book Implementation Details](#order-book-implementation-details)
@@ -47,6 +48,19 @@ Once built, you can run the suite against your datasets on your hardware:
   * See instructions on how to run
     [benchmark experiment](./benchmark_experiment/RunningBenchmarkExperiment.md);
   * See the example of benchmark [here](https://ngrodzitski.github.io/jacobi/).
+
+# Updates
+
+* **2026-03-11**  Remove non performant designs/implementations.
+
+  Price level implementations based on `plf::list` didn't yield better results
+  compared to `std::list` and almost always were showing worst numbers in benchmarks.
+  So further support of plf-based list implementations is abandoned.
+  Price level implementations retired: `plvl12, plvl22, plvl42, plvl52`.
+
+  Chunked Price Level implementations showed poor results in benchmarks.
+  So their further support is abandoned.
+  Price level implementations retired: `plvl41, plvl42`.
 
 ## Technical details
 
@@ -149,29 +163,24 @@ implementing a book:
                                                                      │
 ┌────────────────────────────────────────────────────────────────────┘
 │
-│      BSN                                  Sequence of
-│      Book                                 orders using
-│      Seq Number        Order              a list per level
-│      Counter           on level           or share same list
+│      BSN                 Sequence of
+│      Book                orders using
+│      Seq Number          a list per level
+│      Counter             or share same list
 │
-│    ┌── void ──┐     ┌── std::list ──┐   ┌── isolated list ──┐
-│    │          │     │               │   │                   │
-└────┤          ├──┬──┤               ├───┤                   ├────┐
-     │          │  │  │               │   │                   │    │
-     └── std ───┘  │  └── plf::list ──┘   └─── shared list ───┘    │
-                   │                                               ├──┐
-                   │                                               │  │
-                   ├───────────── SOA price─level ─────────────────┘  │
-                   │                                                  │
-                   │                      Node Container              │
-                   │  ┌── chunks ──┐    ┌── std::list ──┐             │
-                   │  │   list     │    │               │             │
-                   └──┤            ├────┤               ├─────────────┤
-                      │   SOA      │    │               │             │
-                      └── chunks ──┘    └── plf::list ──┘             │
-                          list                                        │
-                                                                      │
-┌─────────────────────────────────────────────────────────────────────┘
+│    ┌── void ──┐        ┌── isolated list ──┐
+│    │          │        │                   │
+└────┤          ├──┬─────┤                   ├─────┐
+     │          │  │     │                   │     │
+     └── std ───┘  │     └─── shared list ───┘     │
+                   │                               ├──┐
+                   │                               │  │
+                   ├────── SOA price─level ────────┘  │
+                   │                                  │
+                   └────── SOA chunks list ───────────┤
+                                                      │
+                                                      │
+┌─────────────────────────────────────────────────────┘
 │
 │       Index container
 │       order_id => order location
@@ -337,7 +346,7 @@ the trade-offs between memory overhead, cache locality, and update complexity.
 
     Containers:
     - `std::list` (benchmark code: **plvl11**)
-    - `plf::list` (benchmark code: **plvl12**).
+    - OBSOLETE:  `plf::list` (benchmark code: **plvl12**).
 
    **Intrusive List** (since 2026-03-10).
 
@@ -359,7 +368,7 @@ the trade-offs between memory overhead, cache locality, and update complexity.
 
    Containers:
     - `std::list` (benchmark code: **plvl21**)
-    - `plf::list` (benchmark code: **plvl22**).
+    - OBSOLETE: `plf::list` (benchmark code: **plvl22**).
 
 
 3. SOA Price Level.
@@ -380,7 +389,7 @@ the trade-offs between memory overhead, cache locality, and update complexity.
     - `std::vector<T>` (benchmark code: **plvl30**)
     - `boost::container::small_vector< T, N >` (benchmark code: **plvl31**).
 
-4. Chunked Price Level.
+4. OBSOLETE: Chunked Price Level.
 
    A hybrid approach reducing pointer overhead.
    Each node is a "chunk" with capacity for 64 orders.
@@ -411,7 +420,7 @@ the trade-offs between memory overhead, cache locality, and update complexity.
 
    Underlying node container:
     - `std::list` (benchmark code: **plvl51**)
-    - `plf::list` (benchmark code: **plvl52**).
+    - OBSOLETE: `plf::list` (benchmark code: **plvl52**).
     - `boost::intrusive::list` (benchmark code: **plvl53**).
 
 ## Orders Table
