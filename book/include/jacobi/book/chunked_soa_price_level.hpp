@@ -138,20 +138,20 @@ struct soa_chunk_node_t
         links[ next ].prev = prev;
     }
 
-    void insert_node( std::uint8_t pos, std::int8_t hp ) noexcept
+    void insert_node( std::uint8_t pos, std::int8_t head_pos ) noexcept
     {
         // Here: we have i-th node disconnected from the list.
         //       What we need to do is to add i-th as new node
-        //       before pos-node.
+        //       before head-node.
 
-        const auto t = links[ hp ].prev;
+        const auto t = links[ head_pos ].prev;
 
         // Set new linkage for i-th node.
-        links[ pos ].next = hp;
+        links[ pos ].next = head_pos;
         links[ pos ].prev = t;
 
-        links[ hp ].prev = pos;
-        links[ t ].next  = pos;
+        links[ head_pos ].prev = pos;
+        links[ t ].next        = pos;
     }
 
     [[nodiscard]] constexpr bool full() const noexcept

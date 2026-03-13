@@ -7,7 +7,6 @@
 
 #pragma once
 
-#include <type_traits>
 #include <vector>
 
 #include <range/v3/view/generate.hpp>

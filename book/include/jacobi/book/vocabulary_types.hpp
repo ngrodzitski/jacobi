@@ -30,6 +30,7 @@ struct order_id_t
     , type_safe::strong_typedef_op::equality_comparison< order_id_t >
     , type_safe::strong_typedef_op::increment< order_id_t >
 {
+    using value_type = std::uint64_t;
     using strong_typedef::strong_typedef;
 };
 static_assert( std::is_trivially_copyable_v< order_id_t > );

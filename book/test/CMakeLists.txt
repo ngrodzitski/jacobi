@@ -5,6 +5,7 @@ project(${test_prj})
 list(APPEND  unittests_srcfiles
     vocabulary_types.cpp
     price_level.cpp
+    soa_price_level2.cpp
     order_refs_index.cpp
     book.cpp
 

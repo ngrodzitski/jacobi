@@ -22,6 +22,7 @@ list(APPEND TARGET_PUBLIC_HEADERS
     include/jacobi/book/price_level.hpp
     include/jacobi/book/price_level_fwd.hpp
     include/jacobi/book/soa_price_level.hpp
+    include/jacobi/book/soa_price_level2.hpp
     include/jacobi/book/vocabulary_types.hpp
 
     include/jacobi/book/map/orders_table.hpp
