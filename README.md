@@ -187,9 +187,11 @@ implementing a book:
 │       order_id => order location
 │
 │      ┌── std::unordered_map ──┐        ***************
-│      │                        │        *   Eventual  *
-└──────┼── tsl::robin_map ──────├────────*   Book      *
-       │                        │        *   Routine   *
+│      │                        │        *             *
+└──────┼── tsl::robin_map ──────┼────────*   Eventual  *
+       │                        │        *   Book      *
+       ├── absl::flat_hash_map ─┤        *   Routine   *
+       │                        │        *             *
        └── boost::unordered:: ──┘        ***************
            unordered_flat_map
 ```
@@ -352,10 +354,8 @@ the trade-offs between memory overhead, cache locality, and update complexity.
    **Intrusive List** (since 2026-03-10).
 
    One intrusive linked list per price level that uses reusable nodes pool.
-   Implementation: `boost::intrusive::list<...>` ([jacobi/book/price_level.hpp](./book/include/jacobi/book/price_level.hpp)).
-
-    Containers:
-    - `std::list` (benchmark code: **plvl13**).
+   Implementation: `boost::intrusive::list<...>` (see [jacobi/book/price_level.hpp](./book/include/jacobi/book/price_level.hpp))
+   benchmark code: **plvl13**.
 
 2. Shared List Price Level.
 
