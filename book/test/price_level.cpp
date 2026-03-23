@@ -1,5 +1,6 @@
 #include <jacobi/book/price_level.hpp>
 #include <jacobi/book/soa_price_level.hpp>
+#include <jacobi/book/soa_price_level2.hpp>
 #include <jacobi/book/chunked_soa_price_level.hpp>
 
 #include <algorithm>
@@ -41,6 +42,7 @@ using PriceLevelImplementations = ::testing::Types<
         soa_price_level_t< boost_smallvec_soa_price_level_traits_t< 16 > > >,
     soa_price_levels_factory_t<
         soa_price_level_t< boost_smallvec_soa_price_level_traits_t< 32 > > >,
+    soa_price_levels2_factory_t,
 
     chunked_soa_price_levels_factory_t<
         chunked_soa_price_level_t< std_list_traits_t > >,
@@ -230,9 +232,9 @@ TYPED_TEST( JacobiBookPriceLevelTest, AddManyRemoveMany )
     using reference_type_t = price_level_t::reference_t;
 
     std::vector< reference_type_t > refs;
-    refs.reserve( 10'000UL );
+    refs.reserve( 100'000UL );
 
-    for( auto i = 1UL; i <= 10'000UL; ++i )
+    for( auto i = 1UL; i <= 100'000UL; ++i )
     {
         const order_t order0{ .id    = order_id_t{ i },
                               .qty   = order_qty_t{ 42 },
@@ -241,27 +243,27 @@ TYPED_TEST( JacobiBookPriceLevelTest, AddManyRemoveMany )
         refs.push_back( plvl.add_order( order0 ) );
     }
 
-    ASSERT_EQ( plvl.orders_count(), 10'000UL );
-    ASSERT_EQ( plvl.orders_qty(), order_qty_t{ 420'000UL } );
+    ASSERT_EQ( plvl.orders_count(), 100'000UL );
+    ASSERT_EQ( plvl.orders_qty(), order_qty_t{ 4'200'000UL } );
 
-    for( auto i = 0UL; i < 1'000UL; ++i )
+    for( auto i = 0UL; i < 10'000UL; ++i )
     {
         plvl.delete_order( refs[ i ] );
     }
 
-    ASSERT_EQ( plvl.orders_count(), 9'000UL );
-    ASSERT_EQ( plvl.orders_qty(), order_qty_t{ 42 * 9'000UL } );
+    ASSERT_EQ( plvl.orders_count(), 90'000UL );
+    ASSERT_EQ( plvl.orders_qty(), order_qty_t{ 42 * 90'000UL } );
 
-    for( auto i = 9000UL; i < 10'000UL; ++i )
+    for( auto i = 90'000UL; i < 100'000UL; ++i )
     {
         plvl.delete_order( refs[ i ] );
     }
 
-    ASSERT_EQ( plvl.orders_count(), 8'000UL );
-    ASSERT_EQ( plvl.orders_qty(), order_qty_t{ 42 * 8'000UL } );
+    ASSERT_EQ( plvl.orders_count(), 80'000UL );
+    ASSERT_EQ( plvl.orders_qty(), order_qty_t{ 42 * 80'000UL } );
 
-    refs.resize( 9'000UL );
-    refs.erase( refs.begin(), refs.begin() + 1'000UL );
+    refs.resize( 90'000UL );
+    refs.erase( refs.begin(), refs.begin() + 10'000UL );
 
     const auto indexes = [ & ]
     {

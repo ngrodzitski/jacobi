@@ -39,7 +39,7 @@ set(levels_storage_variants "MAP" "LINEAR" "MIXED")
 set(price_levels_variants
     "PLVL11" "PLVL13"
     "PLVL21"
-    "PLVL30" "PLVL31"
+    "PLVL30" "PLVL31" "PLVL32"
     "PLVL51" "PLVL53"
 )
 set(reference_index_variants  "REFIX1" "REFIX2" "REFIX3" "REFIX4" )

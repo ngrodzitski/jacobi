@@ -13,6 +13,8 @@
 #    include <jacobi/book/price_level.hpp>
 #elif defined( JACOBI_BOOK_TEST_PLVL30 ) || defined( JACOBI_BOOK_TEST_PLVL31 )
 #    include <jacobi/book/soa_price_level.hpp>
+#elif defined( JACOBI_BOOK_TEST_PLVL32 )
+#    include <jacobi/book/soa_price_level2.hpp>
 #elif defined( JACOBI_BOOK_TEST_PLVL51 ) || defined( JACOBI_BOOK_TEST_PLVL53 )
 #    include <jacobi/book/chunked_soa_price_level.hpp>
 #else
@@ -142,6 +144,8 @@ using price_level_factory_type_t = soa_price_levels_factory_t<
 #elif defined( JACOBI_BOOK_TEST_PLVL31 )
 using price_level_factory_type_t = soa_price_levels_factory_t<
     soa_price_level_t< boost_smallvec_soa_price_level_traits_t< 16 > > >;
+#elif defined( JACOBI_BOOK_TEST_PLVL32 )
+using price_level_factory_type_t = soa_price_levels2_factory_t;
 #elif defined( JACOBI_BOOK_TEST_PLVL51 )
 using price_level_factory_type_t = chunked_soa_price_levels_factory_t<
     chunked_soa_price_level_t< std_list_traits_t > >;

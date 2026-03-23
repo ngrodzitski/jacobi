@@ -9,6 +9,7 @@
 #include <jacobi/book/book.hpp>
 #include <jacobi/book/price_level.hpp>
 #include <jacobi/book/soa_price_level.hpp>
+#include <jacobi/book/soa_price_level2.hpp>
 #include <jacobi/book/chunked_soa_price_level.hpp>
 
 namespace jacobi::bench
@@ -191,6 +192,8 @@ inline int get_profiling_mode()
 //        III. std_price_levels_factory_t
 //              A. soa_price_level_t< std_vector_soa_price_level_traits_t >
 //              B. boost_smallvec_soa_price_level_traits_t< 16 >
+//              C. SOA Packed in a single buffer + reusable pool of buffers
+//                  + custom factory.
 //
 //        //// OBSOLETE: not performing design/implementation:
 //        //// IV.  chunked_price_levels_factory_t + chunked_price_level_t
@@ -372,6 +375,39 @@ struct bsn1_plvl31_refIX4_t                                                     
     : traits_type<                                                                                                                         \
         impl_data_type<                                                                                                                    \
             book::soa_price_levels_factory_t< book::soa_price_level_t< book::boost_smallvec_soa_price_level_traits_t< 16 > > >,            \
+            book::order_refs_index_absl_flat_hash_map_t >,                                                                                 \
+        book::std_bsn_counter_t >                                                                                                          \
+{};                                                                                                                                        \
+                                                                                                                                           \
+/* =================================================================== */                                                                  \
+struct bsn1_plvl32_refIX1_t                                                                                                                \
+    : traits_type<                                                                                                                         \
+        impl_data_type<                                                                                                                    \
+            book::soa_price_levels2_factory_t,                                                                                             \
+            book::order_refs_index_std_unordered_map_t >,                                                                                  \
+        book::std_bsn_counter_t >                                                                                                          \
+{};                                                                                                                                        \
+                                                                                                                                           \
+struct bsn1_plvl32_refIX2_t                                                                                                                \
+    : traits_type<                                                                                                                         \
+        impl_data_type<                                                                                                                    \
+            book::soa_price_levels2_factory_t,                                                                                             \
+            book::order_refs_index_tsl_robin_map_t >,                                                                                      \
+        book::std_bsn_counter_t >                                                                                                          \
+{};                                                                                                                                        \
+                                                                                                                                           \
+struct bsn1_plvl32_refIX3_t                                                                                                                \
+    : traits_type<                                                                                                                         \
+        impl_data_type<                                                                                                                    \
+            book::soa_price_levels2_factory_t,                                                                                             \
+            book::order_refs_index_boost_unordered_flat_map_t >,                                                                           \
+        book::std_bsn_counter_t >                                                                                                          \
+{};                                                                                                                                        \
+                                                                                                                                           \
+struct bsn1_plvl32_refIX4_t                                                                                                                \
+    : traits_type<                                                                                                                         \
+        impl_data_type<                                                                                                                    \
+            book::soa_price_levels2_factory_t,                                                                                             \
             book::order_refs_index_absl_flat_hash_map_t >,                                                                                 \
         book::std_bsn_counter_t >                                                                                                          \
 {};                                                                                                                                        \
@@ -604,6 +640,39 @@ struct bsn2_plvl31_refIX4_t                                                     
             book::order_refs_index_absl_flat_hash_map_t >,                                                                                 \
         book::void_bsn_counter_t >                                                                                                         \
 {};                                                                                                                                        \
+/* =================================================================== */                                                                  \
+struct bsn2_plvl32_refIX1_t                                                                                                                \
+    : traits_type<                                                                                                                         \
+        impl_data_type<                                                                                                                    \
+            book::soa_price_levels2_factory_t,                                                                                             \
+            book::order_refs_index_std_unordered_map_t >,                                                                                  \
+        book::std_bsn_counter_t >                                                                                                          \
+{};                                                                                                                                        \
+                                                                                                                                           \
+struct bsn2_plvl32_refIX2_t                                                                                                                \
+    : traits_type<                                                                                                                         \
+        impl_data_type<                                                                                                                    \
+            book::soa_price_levels2_factory_t,                                                                                             \
+            book::order_refs_index_tsl_robin_map_t >,                                                                                      \
+        book::std_bsn_counter_t >                                                                                                          \
+{};                                                                                                                                        \
+                                                                                                                                           \
+struct bsn2_plvl32_refIX3_t                                                                                                                \
+    : traits_type<                                                                                                                         \
+        impl_data_type<                                                                                                                    \
+            book::soa_price_levels2_factory_t,                                                                                             \
+            book::order_refs_index_boost_unordered_flat_map_t >,                                                                           \
+        book::std_bsn_counter_t >                                                                                                          \
+{};                                                                                                                                        \
+                                                                                                                                           \
+struct bsn2_plvl32_refIX4_t                                                                                                                \
+    : traits_type<                                                                                                                         \
+        impl_data_type<                                                                                                                    \
+            book::soa_price_levels2_factory_t,                                                                                             \
+            book::order_refs_index_absl_flat_hash_map_t >,                                                                                 \
+        book::std_bsn_counter_t >                                                                                                          \
+{};                                                                                                                                        \
+                                                                                                                                           \
 /* =================================================================== */                                                                  \
 struct bsn2_plvl51_refIX1_t                                                                                                                \
     : traits_type<                                                                                                                         \

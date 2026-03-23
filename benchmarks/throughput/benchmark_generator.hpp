@@ -30,6 +30,11 @@
     BENCHMARK_TEMPLATE( func, bsn1_plvl31_refIX3_t )->Name( "bsn1_plvl31_refIX3" );                \
     BENCHMARK_TEMPLATE( func, bsn1_plvl31_refIX4_t )->Name( "bsn1_plvl31_refIX4" );                \
                                                        \
+    BENCHMARK_TEMPLATE( func, bsn1_plvl32_refIX1_t )->Name( "bsn1_plvl32_refIX1" );                \
+    BENCHMARK_TEMPLATE( func, bsn1_plvl32_refIX2_t )->Name( "bsn1_plvl32_refIX2" );                \
+    BENCHMARK_TEMPLATE( func, bsn1_plvl32_refIX3_t )->Name( "bsn1_plvl32_refIX3" );                \
+    BENCHMARK_TEMPLATE( func, bsn1_plvl32_refIX4_t )->Name( "bsn1_plvl32_refIX4" );                \
+                                                       \
     BENCHMARK_TEMPLATE( func, bsn1_plvl51_refIX1_t )->Name( "bsn1_plvl51_refIX1" );                \
     BENCHMARK_TEMPLATE( func, bsn1_plvl51_refIX2_t )->Name( "bsn1_plvl51_refIX2" );                \
     BENCHMARK_TEMPLATE( func, bsn1_plvl51_refIX3_t )->Name( "bsn1_plvl51_refIX3" );                \
@@ -64,6 +69,11 @@
     BENCHMARK_TEMPLATE( func, bsn2_plvl31_refIX2_t )->Name( "bsn2_plvl31_refIX2" );                \
     BENCHMARK_TEMPLATE( func, bsn2_plvl31_refIX3_t )->Name( "bsn2_plvl31_refIX3" );                \
     BENCHMARK_TEMPLATE( func, bsn2_plvl31_refIX4_t )->Name( "bsn2_plvl31_refIX4" );                \
+                                                       \
+    BENCHMARK_TEMPLATE( func, bsn2_plvl32_refIX1_t )->Name( "bsn2_plvl32_refIX1" );                \
+    BENCHMARK_TEMPLATE( func, bsn2_plvl32_refIX2_t )->Name( "bsn2_plvl32_refIX2" );                \
+    BENCHMARK_TEMPLATE( func, bsn2_plvl32_refIX3_t )->Name( "bsn2_plvl32_refIX3" );                \
+    BENCHMARK_TEMPLATE( func, bsn2_plvl32_refIX4_t )->Name( "bsn2_plvl32_refIX4" );                \
                                                        \
     BENCHMARK_TEMPLATE( func, bsn2_plvl51_refIX1_t )->Name( "bsn2_plvl51_refIX1" );                \
     BENCHMARK_TEMPLATE( func, bsn2_plvl51_refIX2_t )->Name( "bsn2_plvl51_refIX2" );                \

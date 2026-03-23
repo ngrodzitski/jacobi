@@ -2,12 +2,10 @@
 
 #include <random>
 
-#include <range/v3/view/zip.hpp>
+#include <range/v3/range/conversion.hpp>
 #include <range/v3/view/iota.hpp>
 #include <range/v3/view/subrange.hpp>
-#include <range/v3/view/take.hpp>
 #include <range/v3/view/transform.hpp>
-#include <range/v3/range/conversion.hpp>
 
 #include <gtest/gtest.h>
 
@@ -23,6 +21,7 @@ using details::soa_price_level_data_access_u8_t;
 using details::soa_price_level_data_access_u16_t;
 using details::soa_price_level_data_access_u32_t;
 using details::raw_buffer_t;
+using details::data_buf_accessor_type;
 
 // NOLINTNEXTLINE
 TEST( JacobiBookDetailsSoaPriceLevelDataAccessU8, BufferRequiredSize )
@@ -200,7 +199,7 @@ template < typename Range >
 {
     zipped_orders_data_t res;
     res.reserve( 16 );
-    for( const auto & [ id, qty ] : range | ranges::views::take( 20 ) )
+    for( const auto & [ id, qty ] : range )
     {
         res.emplace_back( type_safe::get( id ), type_safe::get( qty ) );
     }
@@ -952,7 +951,8 @@ TEST_F( JacobiBookDetailsStdSoaBuffersPoolTests, AllocateBufferUsesU8Buckets )
 
     for( const auto & [ request_capacity, bucket_capacity ] : cases )
     {
-        auto buf = pool.allocate_buffer( request_capacity );
+        auto [ buf, acc_type ] = pool.allocate_buffer( request_capacity );
+        ASSERT_EQ( acc_type, data_buf_accessor_type::u8_links );
         expect_initialized_empty_buffer< soa_price_level_data_access_u8_t >(
             buf, bucket_capacity );
         pool.deallocate_buffer( buf );
@@ -969,7 +969,8 @@ TEST_F( JacobiBookDetailsStdSoaBuffersPoolTests, AllocateBufferUsesU16Buckets )
 
     for( const auto & [ request_capacity, bucket_capacity ] : cases )
     {
-        auto buf = pool.allocate_buffer( request_capacity );
+        auto [ buf, acc_type ] = pool.allocate_buffer( request_capacity );
+        ASSERT_EQ( acc_type, data_buf_accessor_type::u16_links );
         expect_initialized_empty_buffer< soa_price_level_data_access_u16_t >(
             buf, bucket_capacity );
         pool.deallocate_buffer( buf );
@@ -992,7 +993,8 @@ TEST_F( JacobiBookDetailsStdSoaBuffersPoolTests,
                    static_cast< std::uint32_t >(
                        soa_price_level_data_access_u16_t::max_capacity ) );
 
-        auto buf = pool.allocate_buffer( request_capacity );
+        auto [ buf, acc_type ] = pool.allocate_buffer( request_capacity );
+        ASSERT_EQ( acc_type, data_buf_accessor_type::u16_links );
         expect_initialized_empty_buffer< soa_price_level_data_access_u16_t >(
             buf, expected_capacity );
         pool.deallocate_buffer( buf );
@@ -1015,7 +1017,9 @@ TEST_F( JacobiBookDetailsStdSoaBuffersPoolTests,
 
     ASSERT_GT( expected_capacity, u16_max_capacity );
 
-    auto buf = pool.allocate_buffer( request_capacity );
+    auto [ buf, acc_type ] = pool.allocate_buffer( request_capacity );
+
+    ASSERT_EQ( acc_type, data_buf_accessor_type::u32_links );
 
     expect_initialized_empty_buffer< soa_price_level_data_access_u32_t >(
         buf, expected_capacity );
@@ -1045,12 +1049,12 @@ TEST_F( JacobiBookDetailsStdSoaBuffersPoolTests, AllocateAndDeallocateManyBuffer
     {
         for( auto request : requests )
         {
-            buffers.push_back( pool.allocate_buffer( request ) );
+            buffers.push_back( pool.allocate_buffer( request ).first );
         }
 
         if( i % 100 )
         {
-            buffers.push_back( pool.allocate_buffer( 64 * 1024 ) );
+            buffers.push_back( pool.allocate_buffer( 64 * 1024 ).first );
         }
     }
 
@@ -1077,10 +1081,12 @@ template < typename Dst_Accessor, typename Src_Accessor >
 void expect_allocate_buffer_clone_works( std_soa_buffers_pool_t & pool,
                                          std::uint32_t requested_capacity,
                                          std::uint32_t expected_capacity,
-                                         Src_Accessor src,
+                                         Src_Accessor & src,
                                          const std::string & tag )
 {
-    raw_buffer_t dst_buf = pool.allocate_buffer( requested_capacity, src );
+    auto [ dst_buf, acc_type ] = pool.allocate_buffer( requested_capacity, src );
+
+    ASSERT_EQ( acc_type, Dst_Accessor::accessor_type );
 
     ASSERT_NE( dst_buf.data(), nullptr );
     EXPECT_EQ( reinterpret_cast< std::uintptr_t >( dst_buf.data() )
@@ -1201,7 +1207,8 @@ void fill_with_orders( Accessor & acc, std::uint64_t id, std::uint32_t qty )
 // NOLINTNEXTLINE
 TEST_F( JacobiBookDetailsStdSoaBuffersPoolTests, AllocateWithStdCapacities )
 {
-    auto buf0 = pool.allocate_buffer( 1 );
+    auto [ buf0, acc_type0 ] = pool.allocate_buffer( 1 );
+    ASSERT_EQ( acc_type0, data_buf_accessor_type::u8_links );
 
     soa_price_level_data_access_u8_t src0{ buf0 };
 
@@ -1214,7 +1221,10 @@ TEST_F( JacobiBookDetailsStdSoaBuffersPoolTests, AllocateWithStdCapacities )
         src0,
         "18 => 35" );
 
-    raw_buffer_t buf1 = pool.allocate_buffer( src0.capacity() + 1, src0 );
+    // ===============================================================
+    auto [ buf1, acc_type1 ] = pool.allocate_buffer( src0.capacity() + 1, src0 );
+    ASSERT_EQ( acc_type1, data_buf_accessor_type::u8_links );
+
     soa_price_level_data_access_u8_t src1{ buf1 };
     fill_with_orders( src1, 1000, 100 );
 
@@ -1225,7 +1235,10 @@ TEST_F( JacobiBookDetailsStdSoaBuffersPoolTests, AllocateWithStdCapacities )
         src1,
         "36 => 72" );
 
-    raw_buffer_t buf2 = pool.allocate_buffer( src1.capacity() + 1, src1 );
+    // ===============================================================
+    auto [ buf2, acc_type2 ] = pool.allocate_buffer( src1.capacity() + 1, src1 );
+    ASSERT_EQ( acc_type2, data_buf_accessor_type::u8_links );
+
     soa_price_level_data_access_u8_t src2{ buf2 };
     fill_with_orders( src2, 2000, 200 );
 
@@ -1236,7 +1249,10 @@ TEST_F( JacobiBookDetailsStdSoaBuffersPoolTests, AllocateWithStdCapacities )
         src2,
         "73 => 145" );
 
-    raw_buffer_t buf3 = pool.allocate_buffer( src2.capacity() + 1, src2 );
+    // ===============================================================
+    auto [ buf3, acc_type3 ] = pool.allocate_buffer( src2.capacity() + 1, src2 );
+    ASSERT_EQ( acc_type3, data_buf_accessor_type::u8_links );
+
     soa_price_level_data_access_u8_t src3{ buf3 };
     fill_with_orders( src3, 3000, 300 );
 
@@ -1247,7 +1263,10 @@ TEST_F( JacobiBookDetailsStdSoaBuffersPoolTests, AllocateWithStdCapacities )
         src3,
         "146 => 254" );
 
-    raw_buffer_t buf4 = pool.allocate_buffer( src3.capacity() + 1, src3 );
+    // ===============================================================
+    auto [ buf4, acc_type4 ] = pool.allocate_buffer( src3.capacity() + 1, src3 );
+    ASSERT_EQ( acc_type4, data_buf_accessor_type::u8_links );
+
     soa_price_level_data_access_u8_t src4{ buf4 };
     fill_with_orders( src4, 4000, 400 );
 
@@ -1258,7 +1277,10 @@ TEST_F( JacobiBookDetailsStdSoaBuffersPoolTests, AllocateWithStdCapacities )
         src4,
         "255 => 511" );
 
-    raw_buffer_t buf5 = pool.allocate_buffer( src4.capacity() + 1, src4 );
+    // ===============================================================
+    auto [ buf5, acc_type5 ] = pool.allocate_buffer( src4.capacity() + 1, src4 );
+    ASSERT_EQ( acc_type5, data_buf_accessor_type::u16_links );
+
     soa_price_level_data_access_u16_t src5{ buf5 };
     fill_with_orders( src5, 5000, 500 );
 
@@ -1269,7 +1291,10 @@ TEST_F( JacobiBookDetailsStdSoaBuffersPoolTests, AllocateWithStdCapacities )
         src5,
         "512 => 1023" );
 
-    raw_buffer_t buf6 = pool.allocate_buffer( src4.capacity() + 1, src5 );
+    // ===============================================================
+    auto [ buf6, acc_type6 ] = pool.allocate_buffer( src4.capacity() + 1, src5 );
+    ASSERT_EQ( acc_type6, data_buf_accessor_type::u16_links );
+
     soa_price_level_data_access_u16_t src6{ buf6 };
     fill_with_orders( src6, 6000, 600 );
 
@@ -1284,7 +1309,8 @@ TEST_F( JacobiBookDetailsStdSoaBuffersPoolTests, AllocateWithStdCapacities )
 // NOLINTNEXTLINE
 TEST_F( JacobiBookDetailsStdSoaBuffersPoolTests, AllocateForAtLeast1024Capacity )
 {
-    auto buf0 = pool.allocate_buffer( 512 );
+    auto [ buf0, acc_type0 ] = pool.allocate_buffer( 512 );
+    ASSERT_EQ( acc_type0, data_buf_accessor_type::u16_links );
 
     soa_price_level_data_access_u16_t src0{ buf0 };
 
@@ -1306,7 +1332,8 @@ TEST_F( JacobiBookDetailsStdSoaBuffersPoolTests, AllocateBecomesBoss )
     // After few iteration starting with n=1023 (last standard capacity).
     // becomes 56988 (preceded by 45590) and the next
     // will be 71236 for which we need u32-links.
-    auto buf0 = pool.allocate_buffer( 45590 + 1 );
+    auto [ buf0, acc_type0 ] = pool.allocate_buffer( 45590 + 1 );
+    ASSERT_EQ( acc_type0, data_buf_accessor_type::u16_links );
 
     soa_price_level_data_access_u16_t src0{ buf0 };
 
@@ -1321,7 +1348,8 @@ TEST_F( JacobiBookDetailsStdSoaBuffersPoolTests, AllocateBecomesBoss )
 // NOLINTNEXTLINE
 TEST_F( JacobiBookDetailsStdSoaBuffersPoolTests, AllocateLikeABoss )
 {
-    auto buf0 = pool.allocate_buffer( 56988 + 1 );
+    auto [ buf0, acc_type0 ] = pool.allocate_buffer( 56988 + 1 );
+    ASSERT_EQ( acc_type0, data_buf_accessor_type::u32_links );
 
     soa_price_level_data_access_u32_t src0{ buf0 };
 
@@ -1335,6 +1363,12 @@ TEST_F( JacobiBookDetailsStdSoaBuffersPoolTests, AllocateLikeABoss )
         src0.capacity() + 1 + ( src0.capacity() + 1 ) / 4,
         src0,
         "71236 => ..." );
+}
+
+// NOLINTNEXTLINE
+TEST_F( JacobiBookDetailsStdSoaBuffersPoolTests, DeallocateDummyBuffer )
+{
+    pool.deallocate_buffer( std_soa_buffers_pool_t::make_zero_capacity_buffer() );
 }
 
 }  // anonymous namespace

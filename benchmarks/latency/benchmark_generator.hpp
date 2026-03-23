@@ -37,6 +37,11 @@
     JACOBI_BENCHMARK_LATENCY_TEMPLATE( func, bsn1_plvl31_refIX3_t, "bsn1_plvl31_refIX3", events, rng, measurement_count, filter ) \
     JACOBI_BENCHMARK_LATENCY_TEMPLATE( func, bsn1_plvl31_refIX4_t, "bsn1_plvl31_refIX4", events, rng, measurement_count, filter ) \
                                                              \
+    JACOBI_BENCHMARK_LATENCY_TEMPLATE( func, bsn1_plvl32_refIX1_t, "bsn1_plvl32_refIX1", events, rng, measurement_count, filter ) \
+    JACOBI_BENCHMARK_LATENCY_TEMPLATE( func, bsn1_plvl32_refIX2_t, "bsn1_plvl32_refIX2", events, rng, measurement_count, filter ) \
+    JACOBI_BENCHMARK_LATENCY_TEMPLATE( func, bsn1_plvl32_refIX3_t, "bsn1_plvl32_refIX3", events, rng, measurement_count, filter ) \
+    JACOBI_BENCHMARK_LATENCY_TEMPLATE( func, bsn1_plvl32_refIX4_t, "bsn1_plvl32_refIX4", events, rng, measurement_count, filter ) \
+                                                             \
     JACOBI_BENCHMARK_LATENCY_TEMPLATE( func, bsn1_plvl51_refIX1_t, "bsn1_plvl51_refIX1", events, rng, measurement_count, filter ) \
     JACOBI_BENCHMARK_LATENCY_TEMPLATE( func, bsn1_plvl51_refIX2_t, "bsn1_plvl51_refIX2", events, rng, measurement_count, filter ) \
     JACOBI_BENCHMARK_LATENCY_TEMPLATE( func, bsn1_plvl51_refIX3_t, "bsn1_plvl51_refIX3", events, rng, measurement_count, filter ) \
@@ -71,6 +76,11 @@
     JACOBI_BENCHMARK_LATENCY_TEMPLATE( func, bsn2_plvl31_refIX2_t, "bsn2_plvl31_refIX2", events, rng, measurement_count, filter ) \
     JACOBI_BENCHMARK_LATENCY_TEMPLATE( func, bsn2_plvl31_refIX3_t, "bsn2_plvl31_refIX3", events, rng, measurement_count, filter ) \
     JACOBI_BENCHMARK_LATENCY_TEMPLATE( func, bsn2_plvl31_refIX4_t, "bsn2_plvl31_refIX4", events, rng, measurement_count, filter ) \
+                                                             \
+    JACOBI_BENCHMARK_LATENCY_TEMPLATE( func, bsn2_plvl32_refIX1_t, "bsn2_plvl32_refIX1", events, rng, measurement_count, filter ) \
+    JACOBI_BENCHMARK_LATENCY_TEMPLATE( func, bsn2_plvl32_refIX2_t, "bsn2_plvl32_refIX2", events, rng, measurement_count, filter ) \
+    JACOBI_BENCHMARK_LATENCY_TEMPLATE( func, bsn2_plvl32_refIX3_t, "bsn2_plvl32_refIX3", events, rng, measurement_count, filter ) \
+    JACOBI_BENCHMARK_LATENCY_TEMPLATE( func, bsn2_plvl32_refIX4_t, "bsn2_plvl32_refIX4", events, rng, measurement_count, filter ) \
                                                              \
     JACOBI_BENCHMARK_LATENCY_TEMPLATE( func, bsn2_plvl51_refIX1_t, "bsn2_plvl51_refIX1", events, rng, measurement_count, filter ) \
     JACOBI_BENCHMARK_LATENCY_TEMPLATE( func, bsn2_plvl51_refIX2_t, "bsn2_plvl51_refIX2", events, rng, measurement_count, filter ) \
