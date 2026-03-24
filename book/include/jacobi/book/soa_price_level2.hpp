@@ -1154,7 +1154,8 @@ public:
         //
         // We add 7 to handle case requested capacity is 1.
 
-        const auto index = std::bit_width( cap + 7 ) - 4;
+        const auto index =
+            static_cast< uint32_t >( std::bit_width( cap + 7 ) - 4 );
 
         assert( index >= soa_bufs_capacities.size() || index == 0
                 || ( cap == ( soa_bufs_capacities[ index - 1 ] + 1 ) ) );

@@ -1,6 +1,7 @@
 #include <jacobi/book/soa_price_level2.hpp>
 
 #include <random>
+#include <algorithm>
 
 #include <range/v3/range/conversion.hpp>
 #include <range/v3/view/iota.hpp>
