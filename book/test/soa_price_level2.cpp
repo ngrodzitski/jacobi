@@ -983,7 +983,7 @@ TEST_F( JacobiBookDetailsStdSoaBuffersPoolTests, AllocateBufferUsesU16Buckets )
 {
     const std::pair< std::uint32_t, std::uint32_t > cases[] = {
         { 255, 511 },
-        { 512, 1023 },
+        { 512, 1022 },
     };
 
     for( const auto & [ request_capacity, bucket_capacity ] : cases )
@@ -1001,7 +1001,7 @@ TEST_F( JacobiBookDetailsStdSoaBuffersPoolTests,
         AllocateBufferUsesCustomU16ForLargeRequest )
 {
     const std::pair< std::uint32_t, std::uint32_t > cases[] = {
-        { 1024, 1024 + 256 },
+        { 1023, 1023 + 1023 / 4 },
         { 4'000, 5'000 },
         { 20'000, 25'000 },
     };
@@ -1322,7 +1322,7 @@ TEST_F( JacobiBookDetailsStdSoaBuffersPoolTests, AllocateWithStdCapacities )
         src5.capacity() + 1,
         std_soa_buffers_pool_t::soa_bufs_capacities[ 6 ],
         src5,
-        "512 => 1023" );
+        "512 => 1022" );
 
     // ===============================================================
     auto [ buf6, acc_type6 ] = pool.allocate_buffer( src4.capacity() + 1, src5 );
@@ -1336,7 +1336,7 @@ TEST_F( JacobiBookDetailsStdSoaBuffersPoolTests, AllocateWithStdCapacities )
         src6.capacity() + 1,
         std_soa_buffers_pool_t::soa_bufs_capacities[ 6 ],
         src6,
-        "512 => 1023" );
+        "1023 => ..." );
 }
 
 // NOLINTNEXTLINE
@@ -1347,12 +1347,12 @@ TEST_F( JacobiBookDetailsStdSoaBuffersPoolTests, AllocateForAtLeast1024Capacity 
 
     soa_price_level_data_access_u16_t src0{ buf0 };
 
-    ASSERT_EQ( src0.capacity(), 1023 );
+    ASSERT_EQ( src0.capacity(), 1022 );
 
     fill_with_orders( src0, 1, 1 );
 
     expect_allocate_buffer_clone_works< soa_price_level_data_access_u16_t >(
-        pool, src0.capacity() + 1, 1280, src0, "1023 => 1280" );
+        pool, src0.capacity() + 1, 1278, src0, "1022 => 1278" );
 }
 
 // NOLINTNEXTLINE
@@ -1363,30 +1363,30 @@ TEST_F( JacobiBookDetailsStdSoaBuffersPoolTests, AllocateBecomesBoss )
     //            n = (n+1) + (n+1)/4
     //
     // After few iteration starting with n=1023 (last standard capacity).
-    // becomes 56988 (preceded by 45590) and the next
-    // will be 71236 for which we need u32-links.
-    auto [ buf0, acc_type0 ] = pool.allocate_buffer( 45590 + 1 );
+    // becomes 56870 (preceded by 45495) and the next
+    // will be 71088 for which we need u32-links.
+    auto [ buf0, acc_type0 ] = pool.allocate_buffer( 45495 + 1 );
     ASSERT_EQ( acc_type0, data_buf_accessor_type::u16_links );
 
     soa_price_level_data_access_u16_t src0{ buf0 };
 
-    ASSERT_EQ( src0.capacity(), 56988 );
+    ASSERT_EQ( src0.capacity(), 56870 );
 
     fill_with_orders( src0, 1, 1 );
 
     expect_allocate_buffer_clone_works< soa_price_level_data_access_u32_t >(
-        pool, src0.capacity() + 1, 71236, src0, "56988 => 71236" );
+        pool, src0.capacity() + 1, 71088, src0, "56870 => 71088" );
 }
 
 // NOLINTNEXTLINE
 TEST_F( JacobiBookDetailsStdSoaBuffersPoolTests, AllocateLikeABoss )
 {
-    auto [ buf0, acc_type0 ] = pool.allocate_buffer( 56988 + 1 );
+    auto [ buf0, acc_type0 ] = pool.allocate_buffer( 56870 + 1 );
     ASSERT_EQ( acc_type0, data_buf_accessor_type::u32_links );
 
     soa_price_level_data_access_u32_t src0{ buf0 };
 
-    ASSERT_EQ( src0.capacity(), 71236 );
+    ASSERT_EQ( src0.capacity(), 71088 );
 
     fill_with_orders( src0, 1, 1 );
 
@@ -1395,7 +1395,7 @@ TEST_F( JacobiBookDetailsStdSoaBuffersPoolTests, AllocateLikeABoss )
         src0.capacity() + 1,
         src0.capacity() + 1 + ( src0.capacity() + 1 ) / 4,
         src0,
-        "71236 => ..." );
+        "71088 => ..." );
 }
 
 // NOLINTNEXTLINE

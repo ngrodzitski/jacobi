@@ -462,9 +462,11 @@ struct x_raw_soa_links_t
 using u8_soa_links_t = x_raw_soa_links_t< std::uint8_t >;
 
 /**
- * @brief Dummy soa-buffer With zero capacity.
+ * @brief Template array to initialize u8 links data.
  *
- * Represents a normal soa-buffer to be initially used for price levels.
+ * Represents a normal links array which has a free-nodes list
+ * already organized. The data can be copied with only
+ * last link needing to adjust (to loop back to anchor node).
  */
 alignas(
     64 ) constexpr inline std::array< u8_soa_links_t, 256 > initial_u8_links = {
@@ -1052,7 +1054,7 @@ concept Legit_SOA_Data_Accessor =
 //
 
 // Implementations of get-functions for prev/next component of a link
-// which accessable throug a Legit_SOA_Data_Accessor type.
+// which accessable through a Legit_SOA_Data_Accessor type.
 template < bool Is_Reverse, bool Is_Const >
 unified_soa_index_t
 order_soa_data_iterator_t< Is_Reverse, Is_Const >::link_prev_at(
@@ -1155,7 +1157,7 @@ class std_soa_buffers_pool_t
         // LINKS:
                    //  Prev              Next
     /*[0]*/ std::byte{ 0x0 }, std::byte{ 0x0 },           // HEAD ANCHOR
-    /*[1]*/ std::byte{ 0x2 }, std::byte{ 0x1 },           // FREE-NODES HEAD ANCHOR
+    /*[1]*/ std::byte{ 0x0 }, std::byte{ 0x1 },           // FREE-NODES HEAD ANCHOR
         // clang-format on
     };
 
@@ -1171,13 +1173,13 @@ public:
      */
     inline static constexpr std::array< std::uint32_t, 7 > soa_bufs_capacities{
         // CAP     Block size (bytes)
-        17,    //   250
-        35,    //   502
-        72,    //  1020
-        145,   //  2042
-        254,   //  3568
-        511,   //  8192
-        1023,  //  16386
+        17,    //   250         256
+        35,    //   502         512
+        72,    //  1020         1024
+        145,   //  2042         2048
+        254,   //  3568         4096
+        511,   //  8192         8192
+        1022,  //  16368        16384
     };
     /**
      * @brief Determine to which reusable bucket
@@ -1236,7 +1238,7 @@ public:
     std_soa_buffers_pool_t & operator=( std_soa_buffers_pool_t && )      = delete;
 
     explicit std_soa_buffers_pool_t( std::pmr::memory_resource * upstream )
-        : m_mem{ std::pmr::pool_options{ .max_blocks_per_chunk = 1024,
+        : m_mem{ std::pmr::pool_options{ .max_blocks_per_chunk = 64,
                                          .largest_required_pool_block =
                                              max_pooled_buffer_size },
                  upstream }
@@ -1252,8 +1254,8 @@ public:
      * @brief Allocate a Price level buffer with at least a given capacity.
      *
      * @pre The requested capacity must be one of:
-     *      `1, 18, 36, 73, 146, 255, 512, 1024`
-     *      or a value greater than 1024.
+     *      `1, 18, 36, 73, 146, 255, 512, 1023`
+     *      or a value greater than 1023.
      */
     [[nodiscard]] std::pair< raw_buffer_t, data_buf_accessor_type >
     allocate_buffer( std::uint32_t capacity )
@@ -1340,11 +1342,11 @@ public:
         }
         else
         {
-            if( hardcoded_capacity_index < 7 ) [[likely]]
+            if( hardcoded_capacity_index < soa_bufs_capacities.size() ) [[likely]]
             {
-                accessor_type = data_buf_accessor_type::u16_links;
                 res_buf = allocate_and_init< soa_price_level_data_access_u16_t >(
                     soa_bufs_capacities[ hardcoded_capacity_index ], src_data );
+                accessor_type = data_buf_accessor_type::u16_links;
             }
             else
             {
@@ -1379,12 +1381,27 @@ public:
             }
         }
 
+        assert( accessor_type != data_buf_accessor_type::u8_links
+                || res_buf.size()
+                       <= soa_price_level_data_access_u8_t::required_size(
+                           soa_price_level_data_access_u8_t::max_capacity ) );
+
+        assert( accessor_type != data_buf_accessor_type::u16_links
+                || res_buf.size()
+                       <= soa_price_level_data_access_u16_t::required_size(
+                           soa_price_level_data_access_u16_t::max_capacity ) );
+
+        assert( accessor_type != data_buf_accessor_type::u32_links
+                || res_buf.size()
+                       <= soa_price_level_data_access_u32_t::required_size(
+                           soa_price_level_data_access_u32_t::max_capacity ) );
+
         return std::make_pair( res_buf, accessor_type );
     }
 
     void deallocate_buffer( raw_buffer_t buf )
     {
-        if( dummy_zero_capacity_buffer_size > buf.size() ) [[likely]]
+        if( buf.size() > dummy_zero_capacity_buffer_size ) [[likely]]
         {
             m_mem.deallocate( buf.data(), buf.size(), soa_buf_alignment );
         }
@@ -1441,28 +1458,10 @@ private:
 struct soa_data_handle_t
 {
 public:
-    soa_data_handle_t() noexcept
+    explicit soa_data_handle_t() noexcept
     {
         std::ignore = reinit< soa_price_level_data_access_u8_t >(
             std_soa_buffers_pool_t::make_zero_capacity_buffer() );
-    }
-
-    soa_data_handle_t( const soa_data_handle_t & )             = delete;
-    soa_data_handle_t & operator=( const soa_data_handle_t & ) = delete;
-
-    soa_data_handle_t( soa_data_handle_t && other ) noexcept
-    {
-        std::ignore =
-            reinit( other.m_accessor_type,
-                    other.reinit< soa_price_level_data_access_u8_t >(
-                        std_soa_buffers_pool_t::make_zero_capacity_buffer() ) );
-    }
-
-    soa_data_handle_t & operator=( soa_data_handle_t && other ) noexcept
-    {
-        soa_data_handle_t tmp{ std::move( other ) };
-        swap( *this, tmp );
-        return *this;
     }
 
     /**
@@ -1550,13 +1549,9 @@ public:
 
     friend void swap( soa_data_handle_t & a, soa_data_handle_t & b )
     {
-        auto buf_a       = a.unified_accessor()->buffer();
-        auto buf_b       = b.unified_accessor()->buffer();
-        const auto acc_a = a.m_accessor_type;
-        const auto acc_b = b.m_accessor_type;
-
-        std::ignore = a.reinit( acc_b, buf_b );
-        std::ignore = b.reinit( acc_a, buf_a );
+        using std::swap;
+        swap( a.m_accessor_storage, b.m_accessor_storage );
+        swap( a.m_accessor_type, b.m_accessor_type );
     }
 
 private:
@@ -1575,6 +1570,8 @@ private:
         details::data_buf_accessor_type::u8_links
     };
 };
+
+static_assert( std::is_trivially_copyable_v< soa_data_handle_t > );
 
 }  // namespace details
 
@@ -1606,8 +1603,6 @@ public:
         , m_buffers_pool{ buffers_pool }
     {
     }
-
-    ~soa_price_level2_t() { m_buffers_pool->deallocate_buffer( m_data.buffer() ); }
 
     friend inline void swap( soa_price_level2_t & lvl1,
                              soa_price_level2_t & lvl2 ) noexcept
@@ -1804,6 +1799,12 @@ public:
         return order_t{ id, qty, m_price };
     }
 
+    [[nodiscard]] friend details::raw_buffer_t access_buffer(
+        soa_price_level2_t && plvl ) noexcept
+    {
+        return plvl.m_data.buffer();
+    }
+
 private:
     /**
      * @name Order manipulations implementation
@@ -1974,7 +1975,8 @@ public:
 
     void retire_price_level( [[maybe_unused]] price_level_t && price_level )
     {
-        // Do nothing
+        m_soa_buffers_pool.deallocate_buffer(
+            access_buffer( std::move( price_level ) ) );
     }
 
 private:
