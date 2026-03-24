@@ -187,7 +187,7 @@ private:
 protected:
     raw_buffer_t m_raw_data;
     std::uint32_t m_cached_size;
-    const std::uint32_t m_cached_capacity;
+    std::uint32_t m_cached_capacity;
     raw_order_id_t * m_ids;
     raw_order_qty_t * m_qtys;
 };
