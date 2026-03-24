@@ -144,7 +144,8 @@ class JacobiBookDetailsSoaPriceLevelDataAccessTests : public ::testing::Test
 protected:
     void SetUp() override {}
 
-    using data_access_t = soa_price_level_data_access_t< T >;
+    using index_t       = T;
+    using data_access_t = soa_price_level_data_access_t< index_t >;
 };
 
 using JacobiBookDetailsSoaPriceLevelDataAccessTestTypes =
@@ -156,8 +157,8 @@ TYPED_TEST_SUITE( JacobiBookDetailsSoaPriceLevelDataAccessTests,
 // NOLINTNEXTLINE
 TYPED_TEST( JacobiBookDetailsSoaPriceLevelDataAccessTests, InitializeLayout )
 {
-    using soa_price_level_data_access_t =
-        std::remove_reference_t< decltype( *this ) >::data_access_t;
+    using this_type_t = std::remove_reference_t< decltype( *this ) >;
+    using soa_price_level_data_access_t = this_type_t::data_access_t;
 
     constexpr std::uint32_t cap = 4;
     aligned_buffer_t buf{ soa_price_level_data_access_t::required_size( cap ) };
@@ -176,11 +177,18 @@ TYPED_TEST( JacobiBookDetailsSoaPriceLevelDataAccessTests, InitializeLayout )
     EXPECT_EQ( links[ 0 ].prev, 0 );
     EXPECT_EQ( links[ 0 ].next, 0 );
 
-    // Free-list head anchor should forward link to itself.
-    // and prev must point to first node to be used if free list is empty
-    // which is 2 (first usable node - not an anchor).
-    EXPECT_EQ( links[ 1 ].next, 1 );
-    EXPECT_EQ( links[ 1 ].prev, 2 );
+    if constexpr( !std::is_same_v<
+                      std::uint8_t,
+                      typename soa_price_level_data_access_t::short_index_t > )
+    {
+        // Virgin cursor node.
+
+        // Free-list head anchor should forward link to itself.
+        // and prev must point to first node to be used if free list is empty
+        // which is 2 (first usable node - not an anchor).
+        EXPECT_EQ( links[ 1 ].next, 1 );
+        EXPECT_EQ( links[ 1 ].prev, 2 );
+    }
 
     std::vector< std::uint32_t > free_nodes;
     for( auto i = links[ 1 ].next; i != 1; i = links[ i ].next )
@@ -188,8 +196,18 @@ TYPED_TEST( JacobiBookDetailsSoaPriceLevelDataAccessTests, InitializeLayout )
         free_nodes.push_back( i );
     }
 
-    const std::vector< std::uint32_t > expected{};
-    EXPECT_EQ( free_nodes, expected );
+    if constexpr( !std::is_same_v<
+                      std::uint8_t,
+                      typename soa_price_level_data_access_t::short_index_t > )
+    {
+        const std::vector< std::uint32_t > expected{};
+        EXPECT_EQ( free_nodes, expected );
+    }
+    else
+    {
+        const std::vector< std::uint32_t > expected{ 2, 3, 4, 5 };
+        EXPECT_EQ( free_nodes, expected );
+    }
 }
 
 using zipped_orders_data_t =
@@ -1141,11 +1159,25 @@ void expect_allocate_buffer_clone_works( std_soa_buffers_pool_t & pool,
             << "expected_capacity=" << expected_capacity << "; " << "tag=" << tag
             << ";";
     }
-    ASSERT_EQ( src_links[ 1 ].next, dst_links[ 1 ].next )
-        << "src.capacity()=" << src.capacity() << "; "
-        << "requested_capacity=" << requested_capacity << "; "
-        << "expected_capacity=" << expected_capacity << "; " << "tag=" << tag
-        << ";";
+
+    if constexpr( std::is_same_v< std::uint8_t,
+                                  typename Dst_Accessor::short_index_t > )
+    {
+        ASSERT_EQ( src.capacity() + details::extra_links_for_anchors,
+                   dst_links[ 1 ].next )
+            << "src.capacity()=" << src.capacity() << "; "
+            << "requested_capacity=" << requested_capacity << "; "
+            << "expected_capacity=" << expected_capacity << "; " << "tag=" << tag
+            << ";";
+    }
+    else
+    {
+        ASSERT_EQ( src_links[ 1 ].next, dst_links[ 1 ].next )
+            << "src.capacity()=" << src.capacity() << "; "
+            << "requested_capacity=" << requested_capacity << "; "
+            << "expected_capacity=" << expected_capacity << "; " << "tag=" << tag
+            << ";";
+    }
 
     for( auto i = 0u; i < dst.size(); ++i )
     {

@@ -278,9 +278,8 @@ constexpr data_buf_accessor_type make_accessor_type() noexcept
 #endif
 
 /**
- * @name Iterator for .
+ * @name Iterator for soa orders data.
  */
-/// @{
 /**
  * @brief Universal soa iterator.
  */
@@ -446,7 +445,34 @@ struct order_soa_data_iterator_t
 };
 
 //
-// soa_price_level_data_t
+// raw_soa_links_t
+//
+
+/**
+ * @brief Short SOA data referencing to adjacent nodes.
+ *
+ */
+template < Soa_Index_Type Index_Type >
+struct x_raw_soa_links_t
+{
+    Index_Type prev;
+    Index_Type next;
+};
+
+using u8_soa_links_t = x_raw_soa_links_t< std::uint8_t >;
+
+/**
+ * @brief Dummy soa-buffer With zero capacity.
+ *
+ * Represents a normal soa-buffer to be initially used for price levels.
+ */
+alignas(
+    64 ) constexpr inline std::array< u8_soa_links_t, 256 > initial_u8_links = {
+#include "soa_price_level2_initial_links.ipp"
+};
+
+//
+// soa_price_level_data_access_t
 //
 
 /**
@@ -479,19 +505,7 @@ public:
     constexpr inline static short_index_t links_head_pos{ 0 };
     constexpr inline static short_index_t links_free_head_pos{ 1 };
 
-    //
-    // raw_soa_links_t
-    //
-
-    /**
-     * @brief Short SOA data referencing to adjacent nodes.
-     *
-     */
-    struct raw_soa_links_t
-    {
-        short_index_t prev;
-        short_index_t next;
-    };
+    using raw_soa_links_t = x_raw_soa_links_t< short_index_t >;
 
     /**
      * @name Offset calculations data in the buffer.
@@ -608,27 +622,43 @@ public:
             raw_buf.data() + links_offset( cap ) );
 
         links[ links_head_pos ] = { links_head_pos, links_head_pos };
+        if constexpr( !std::is_same_v< std::uint8_t, Index_Type > )
+        {
+            // No short-cuts for long price levels here
+            // so we use virgin-nodes cursor.
 
-        // Notes regarding reusable free nodes list.
-        //
-        // Free reusable nodes list is a forward list.
-        // We only use .next field to build it.
-        //
-        // Initially the free-list is empty.
-        // We do not init all links to establish free-list so that
-        // it contains all nodes initially.
-        // What we do instead is assume all nodes starting from
-        // offset `extra_links_for_anchors` to be available for being used.
-        // Once the node is used and later released (the order was removed)
-        // it goes to free-list and could be reused from there.
-        //
-        // To keep track of virgin nodes we use
-        // free-head-link .prev field (it is not used because free-list
-        // is a forward list). And it is used to supply a usable node
-        // if the free-head-link.next is not pointing to a reusable node
-        // (meaning .next points back to free-head-link).
-        links[ links_free_head_pos ] = { extra_links_for_anchors,
-                                         links_free_head_pos };
+            // Notes regarding reusable free nodes list.
+            //
+            // Free reusable nodes list is a forward list.
+            // We only use .next field to build it.
+            //
+            // Initially the free-list is empty.
+            // We do not init all links to establish free-list so that
+            // it contains all nodes initially.
+            // What we do instead is assume all nodes starting from
+            // offset `extra_links_for_anchors` to be available for being used.
+            // Once the node is used and later released (the order was removed)
+            // it goes to free-list and could be reused from there.
+            //
+            // To keep track of virgin nodes we use
+            // free-head-link .prev field (it is not used because free-list
+            // is a forward list). And it is used to supply a usable node
+            // if the free-head-link.next is not pointing to a reusable node
+            // (meaning .next points back to free-head-link).
+            links[ links_free_head_pos ] = { extra_links_for_anchors,
+                                             links_free_head_pos };
+        }
+        else
+        {
+            // Shortcut: use already initialized array to copy from
+            std::memcpy(
+                links,
+                initial_u8_links.data(),
+                ( cap + extra_links_for_anchors ) * sizeof( raw_soa_links_t ) );
+            // Make sure last link in free list points back
+            // to anchor node.
+            links[ cap + extra_links_for_anchors - 1 ].next = links_free_head_pos;
+        }
     }
 
     /**
@@ -674,6 +704,24 @@ public:
                          old_links,
                          ( old_cap + extra_links_for_anchors )
                              * sizeof( raw_soa_links_t ) );
+
+            if constexpr( std::is_same_v< std::uint8_t, Index_Type > )
+            {
+                // Shortcut: use already initialized array to copy from
+                std::memcpy(
+                    new_links + old_cap + extra_links_for_anchors,
+                    initial_u8_links.data() + old_cap + extra_links_for_anchors,
+                    ( cap - old_cap ) * sizeof( raw_soa_links_t ) );
+
+                // Make sure last link in free list points back
+                // to anchor node.
+                new_links[ cap + extra_links_for_anchors - 1 ].next =
+                    links_free_head_pos;
+
+                // Init free list anchor:
+                new_links[ links_free_head_pos ].next =
+                    old_cap + extra_links_for_anchors;
+            }
         }
         else
         {
@@ -802,28 +850,42 @@ public:
         auto free_link = m_links[ links_free_head_pos ];
 
         unified_soa_index_t i;
-        if( free_link.next != links_free_head_pos )
+        if constexpr( std::is_same_v< std::uint8_t, Index_Type > )
         {
-            // First supply from free list.
+            // For u8 we take a shortcut knowing
+            // that free list is initialied with all free nodes
             i              = free_link.next;
             free_link.next = m_links[ i ].next;
         }
         else
         {
-            // Actually we have `assert( !full() )` at the entrance of the function
-            // but we still put this assert here on case
-            // `full()` logic is somehow compromised.
-            assert( free_link.prev < m_cached_capacity + extra_links_for_anchors );
+            // Here we have long price levels and as such rely on
+            // virgin-cursor rather than initialized free list.
+            // So in that case we have a branch.
+            if( free_link.next != links_free_head_pos )
+            {
+                // First supply from free list.
+                i              = free_link.next;
+                free_link.next = m_links[ i ].next;
+            }
+            else
+            {
+                // Actually we have `assert( !full() )` at the entrance of the
+                // function but we still put this assert here on case `full()`
+                // logic is somehow compromised.
+                assert( free_link.prev
+                        < m_cached_capacity + extra_links_for_anchors );
 
-            // Here: means this level first time reaches that size
-            // and we supply yet another virgin node from a pos that we hold in
-            // free_link.prev.
-            i = free_link.prev++;
+                // Here: means this level first time reaches that size
+                // and we supply yet another virgin node from a pos that we hold in
+                // free_link.prev.
+                i = free_link.prev++;
 
-            // When we use the last yet not used node
-            // `free_link.prev` will be equal to
-            // `m_cached_capacity + extra_links_for_anchors`
-            // and we no longer must ever execute this branch.
+                // When we use the last yet not used node
+                // `free_link.prev` will be equal to
+                // `m_cached_capacity + extra_links_for_anchors`
+                // and we no longer must ever execute this branch.
+            }
         }
 
         m_links[ links_free_head_pos ] = free_link;
