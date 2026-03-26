@@ -390,6 +390,14 @@ the trade-offs between memory overhead, cache locality, and update complexity.
     - `std::vector<T>` (benchmark code: **plvl30**)
     - `boost::container::small_vector< T, N >` (benchmark code: **plvl31**).
 
+   **SOA Price Level 2** (since 2026-03-26).
+
+   Orders data is stored in a singe buffer. Data layout is same as for
+   SOA Price Level (separate arrays for ids, quantities and links).
+   Each buffer is provided from a pool implemented with
+   `std::pmr::unsynchronized_pool_resource`
+   (benchmark code: **plvl31**).
+
 4. OBSOLETE: Chunked Price Level.
 
    A hybrid approach reducing pointer overhead.
